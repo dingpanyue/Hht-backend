@@ -17,6 +17,7 @@ class CreateTableAssignmentClassifications extends Migration
         Schema::create('assignment_classifications', function (Blueprint $table) {
             $table->increments('id')->index();
             $table->string('name');
+            $table->string('alias');
             $table->timestamps();
         });
     }
