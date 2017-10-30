@@ -2,6 +2,8 @@
 
 use Illuminate\Http\Request;
 
+include 'Api/ApiMobileTerminal.php';
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -17,6 +19,8 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+//api 注册接口
+Route::middleware('api')->post('/user/register', 'Api\RegisterController@register');
 //api 登陆接口
 Route::middleware('api')->post('/user/login', 'Api\LoginController@login');
 
@@ -26,6 +30,5 @@ Route::group([
 ], function () {
     //测试接口
     Route::get('/test', 'Api\TestController@test');
-
 
 });
