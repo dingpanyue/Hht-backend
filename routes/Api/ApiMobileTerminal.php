@@ -9,10 +9,21 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 ], function () {
 
     Route::get('/', ['as' => 'MobileTerminal', function () {
-        return "行行通移动端接口";
+        return "行行通app接口";
     }]);
+
+    //注册
     Route::post('/register', 'RegisterController@register');
+    //登录
     Route::post('/login', 'LoginController@login');
+
+
+    //委托接口
+    Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
+        //获取所有委托的类目
+        Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
+        //
+    });
 
 
 

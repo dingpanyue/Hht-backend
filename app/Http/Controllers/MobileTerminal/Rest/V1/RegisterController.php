@@ -16,7 +16,7 @@ class RegisterController extends ApiController
     {
         $validator = Validator::make($request->all(), [
             'mobile'    => 'required|exists:users',
-            '',
+            'sms_code'  =>  'required|',
             'password' => 'required|between:6,32',
         ]);
 

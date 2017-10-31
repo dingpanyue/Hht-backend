@@ -1,6 +1,9 @@
 <?php
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 use App\Http\Controllers\Controller;
+use App\Models\RestLog;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
 
 /**
  * Created by PhpStorm.
@@ -11,6 +14,13 @@ use App\Http\Controllers\Controller;
 
 class BaseController extends Controller
 {
+    protected  $user;
+
+    public function __construct()
+    {
+        $this->user = app('auth')->guard('api')->user();;
+    }
+
     /**
      * 当前版本号
      */
@@ -98,7 +108,6 @@ class BaseController extends Controller
         }
 
         $log = new RestLog();
-        $log->ep_key = $subDomain;
         $log->request = json_encode(Request::except('file'));
         $log->request_route = \Route::currentRouteName();
         $log->response = json_encode($data);
