@@ -18,7 +18,7 @@ class BaseController extends Controller
 
     public function __construct()
     {
-        $this->user = app('auth')->guard('api')->user();;
+        $this->user = app('auth')->guard('api')->user();
     }
 
     /**

@@ -22,7 +22,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
         //获取所有委托的类目
         Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
-        //
+        //发布委托
+        Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publish']);
     });
 
 

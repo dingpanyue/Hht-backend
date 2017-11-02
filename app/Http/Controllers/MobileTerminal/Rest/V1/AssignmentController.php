@@ -1,6 +1,10 @@
 <?php
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 use App\Models\AssignmentClassification;
+use App\Models\GlobalConfig;
+use App\Services\Helper;
+use function foo\func;
+use Illuminate\Http\Request;
 
 /**
  * Created by PhpStorm.
@@ -19,9 +23,11 @@ class AssignmentController extends BaseController
     }
 
     //发起委托
-    public function assignment()
+    public function publish(Request $request)
     {
         $user = $this->user;
-        dd ($user);
+        $inputs = $request->only('title', 'classification', 'introduction', 'province_id', 'city_id', 'area_id',
+            'lng', 'lat', 'detail_address', 'reward', 'expired_at', 'deadline', 'status', 'comment');
+
     }
 }

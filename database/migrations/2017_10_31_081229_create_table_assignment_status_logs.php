@@ -20,11 +20,9 @@ class CreateTableAssignmentStatusLogs extends Migration
             $table->string('operation')->index()->comment('操作');
             $table->integer('user_id')->index();
             $table->integer('assignment_id')->index();
-            $table->
-            $table->decimal('reward')->comment('委托报酬');
-            $table->timestamp('deadline')->comment('截止时间');
-            $table->integer('status')->index();
-            $table->text('comment')->comment('接受委托时的备注');
+            $table->text('comment')->comment('备注');
+            $table->integer('origin_status')->comment('操作前状态');
+            $table->integer('final_status')->comment('操作后状态');
             $table->timestamps();
         });
     }
@@ -37,5 +35,6 @@ class CreateTableAssignmentStatusLogs extends Migration
     public function down()
     {
         //
+        Schema::drop('assignment_operation_logs');
     }
 }
