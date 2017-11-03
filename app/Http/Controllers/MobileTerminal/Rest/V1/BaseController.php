@@ -36,6 +36,10 @@ class BaseController extends Controller
     const CODE_PARAM_ILLEGAL                 = 200003;//参数不合法，必填的参数没有传入，或类型不合法
     const CODE_NOT_FUND_RESOURCE              = 200009;//请求的资源不存在（资源 404）
 
+
+    const CODE_ASSIGNMENT_STATUS_NOT_ALLOWED    =   200100; //委托状态不允许操作
+
+
     /**
      * 获取请求所要求的版本号
      * @return int|string

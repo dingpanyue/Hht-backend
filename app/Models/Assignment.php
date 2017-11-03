@@ -20,4 +20,22 @@ class Assignment extends Model
     const STATUS_COMMITTED = 5;              //接受的委托一辈完成提交，等待发布人确认状态
     const STATUS_FAILED = 6;                 //委托失败
     const STATUS_SUCCESS = 7;                //委托成功
+
+    public $fillable = [
+        'title',
+        'classification',
+        'introduction',
+        'province_id',
+        'city_id',
+        'area_id',
+        'lng',
+        'lat',
+        'detail_address',
+        'reward',
+        'expired_at',
+        'deadline',
+        'comment',
+        'public_user_id',
+        'status'
+    ];
 }

@@ -26,13 +26,14 @@ class CreateTableAssignments extends Migration
             $table->decimal('lng');
             $table->decimal('lat');
             $table->text('detail_address')->comment('详细地址');
-            $table->decimal('reward')->index()->comment('报酬');
-            $table->timestamp('expired_at')->comment('委托可接受状态截止时间');
-            $table->timestamp('deadline')->comment('委托结束期限');
+            $table->decimal('reward')->index()->nullable()->comment('报酬');
+            $table->timestamp('expired_at')->nullable()->comment('委托可接受状态截止时间');
+            $table->timestamp('deadline')->nullable()->comment('委托结束期限');
             $table->tinyInteger('status')->comment('发布委托时的备注状态');
             $table->text('comment')->comment('备注');
             $table->timestamps();
         });
+
     }
 
     /**
