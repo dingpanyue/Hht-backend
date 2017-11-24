@@ -17,8 +17,10 @@ class CreateTableAcceptedAssignments extends Migration
         Schema::create('accepted_assignments', function(Blueprint $table)
         {
             $table->increments('id');
-            $table->integer('accept_user_id')->index();
-            $table->integer('assignment_id')->index();
+            $table->string('created_from')->index()->comment('创建的来源： 可以来自于 assignment 或者 service');
+            $table->integer('assign_user_id')->index()->comment('委托者id');
+            $table->integer('serve_user_id')->index()->comment('服务者id');
+            $table->integer('parent_id')->index();
             $table->decimal('reward')->comment('委托报酬');
             $table->timestamp('deadline')->comment('截止时间');
             $table->integer('status')->index();

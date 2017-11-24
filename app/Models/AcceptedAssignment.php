@@ -11,4 +11,13 @@ use Illuminate\Database\Eloquent\Model;
 class AcceptedAssignment extends Model
 {
 
+    public function assignment()
+    {
+        return $this->belongsTo(Assignment::class, 'assignment_id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'accept_user_id');
+    }
 }

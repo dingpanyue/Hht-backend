@@ -32,6 +32,13 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@accept']);
     });
 
+    //用户接口
+    Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
+        //
+    });
+
+
+
 
 
 });
