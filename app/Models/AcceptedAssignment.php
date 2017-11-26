@@ -24,6 +24,19 @@ class AcceptedAssignment extends Model
     const STATUS_FINISHED = 5;
     const STATUS_FAILED = 6;
 
+    public $fillable = [
+        'created_from',
+        'assign_user_id',
+        'serve_user_id',
+        'parent_id',
+        'reward',
+        'deadline',
+        'status',
+        'comment',
+        'created_at',
+        'updated_at'
+    ];
+
     //创建者（委托或者服务）
     public function parent()
     {
