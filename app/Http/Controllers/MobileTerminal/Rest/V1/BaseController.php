@@ -35,7 +35,7 @@ class BaseController extends Controller
     const CODE_SUCCESS                         = 100000;//成功
     const CODE_PARAM_ILLEGAL                 = 200003;//参数不合法，必填的参数没有传入，或类型不合法
     const CODE_NOT_FUND_RESOURCE              = 200009;//请求的资源不存在（资源 404）
-
+    const CODE_NOT_ALLOWED                         = 200010;//禁止操作
 
     const CODE_ASSIGNMENT_STATUS_NOT_ALLOWED    =   200100; //委托状态不允许操作
 
@@ -75,6 +75,16 @@ class BaseController extends Controller
     public static function parametersIllegal($message = null)
     {
         return self::encodeResult(self::CODE_PARAM_ILLEGAL, $message);
+    }
+
+    /**
+     * 禁止操作 统一返回格式
+     * @param string $message
+     * @return string
+     */
+    public static function notAllowed($message = "Operation Not Allowed")
+    {
+        return self::encodeResult(self::CODE_NOT_ALLOWED, $message);
     }
 
 

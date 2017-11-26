@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends ApiController
 {
-
     //注册接口
     public function login(Request $request)
     {
@@ -36,5 +35,4 @@ class RegisterController extends ApiController
 
         return json_encode(['message' => 'login failed','code' => 401, 'status' => 'failed']);
     }
-
 }

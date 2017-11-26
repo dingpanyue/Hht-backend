@@ -26,7 +26,6 @@ class CreateTableAcceptedAssignments extends Migration
             $table->integer('status')->index();
             $table->text('comment')->comment('接受委托时的备注');
             $table->timestamps();
-            
         });
     }
 

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\AcceptedAssignment;
@@ -29,8 +28,8 @@ class AssignmentService
     {
         unset($params['status']);
         $assignment = new Assignment();
-
         $params = array_merge($params, ['public_user_id' => $userId, 'status' => $status]);
+
         try {
             $assignment = $assignment->create(
                 $params
@@ -38,7 +37,11 @@ class AssignmentService
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode());
         }
+
+        //todo 日志记录
+
         return $assignment;
+
     }
 
     //获取委托列表
@@ -85,50 +88,118 @@ class AssignmentService
         $acceptedAssignment = new AcceptedAssignment();
 
         if ($assignment->reward && $assignment->deadline) {
-
             $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $assignment, $userId) {
                 $acceptedAssignment = $acceptedAssignment->create(
                     [
-                        'accepted_user_id' => $userId,
-                        'assignment_id' => $assignment->id,
+                        'created_from' => 'assignment',
+                        'assign_user_id' => $assignment->user_id,
+                        'serve_user_id' => $userId,
+                        'parent_id' => $assignment->id,
                         'reward' => $assignment->reward,
                         'deadline' => $assignment->deadline,
-                        //todo 状态为已接受且已确认同意
-                        'status' => '',
-                        'comment' => ''
+                        'status' => AcceptedAssignment::STATUS_SUBMITTED,
+                        'comment' => '',
                     ]
                 );
-
-                $assignment->status = Assignment::STATUS_ACCEPTED;
-                $assignment->save();
-
+//                $assignment->status = Assignment::STATUS_ACCEPTED;
+//                $assignment->save();
                 return $acceptedAssignment;
             });
-
             return $acceptedAssignment;
         } else {
             //发布者的委托中有什么取什么
             if ($assignment->reward) {
                 $reward = $assignment->reward;
             }
+
             if ($assignment->deadline) {
                 $deadline = $assignment->deadline;
             }
 
             $acceptedAssignment = $acceptedAssignment->create(
                 [
-                    'accepted_user_id' => $userId,
-                    'assignment_id' => $assignment->id,
+                    'created_from' => 'assignment',
+                    'assign_user_id' => $assignment->user_id,
+                    'serve_user_id' => $userId,
+                    'parent_id' => $assignment->id,
                     'reward' => $reward,
                     'deadline' => $deadline,
-                    //todo 状态为已接受但未确认同意
-                    'status' => '',
-                    'comment' => ''
+                    'status' => AcceptedAssignment::STATUS_SUBMITTED,
+                    'comment' => '',
                 ]
             );
+
             return $acceptedAssignment;
         }
     }
 
+    //采纳委托
+    public function adaptAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
+    {
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment) {
 
+            $acceptedAssignment->status = AcceptedAssignment::STATUS_ADAPTED;
+            $acceptedAssignment->save();
+
+            $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+            $assignment->status = Assignment::STATUS_ADAPTED;
+            $assignment->save();
+
+            //todo 日志
+
+            return $acceptedAssignment;
+        });
+
+
+        //todo 日志记录
+
+        //todo 发送推送
+
+        return $acceptedAssignment;
+    }
+
+    public function cancelAcceptedAssignment(AcceptedAssignment $acceptedAssignment, $userId)
+    {
+        $acceptedAssignment->status = AcceptedAssignment::STATUS_CANCELED;
+        $acceptedAssignment->save();
+
+        //todo 日志记录
+
+        //todo 发送推送
+
+        return $acceptedAssignment;
+    }
+
+    public function dealAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
+    {
+        $acceptedAssignment->status = AcceptedAssignment::STATUS_DEALT;
+        $acceptedAssignment->save();
+
+        //todo 日志记录
+
+        //todo 发送推送
+
+        return $acceptedAssignment;
+    }
+
+    public function finishAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
+    {
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment) {
+
+            $acceptedAssignment->status = AcceptedAssignment::STATUS_FINISHED;
+            $acceptedAssignment->save();
+
+            $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+            $assignment->status = Assignment::STATUS_FINISHED;
+            $assignment->save();
+
+            //todo 把报酬打到serve_user 账户
+
+            //todo 日志
+
+            //todo 推送
+
+            return $acceptedAssignment;
+        });
+    }
 }
