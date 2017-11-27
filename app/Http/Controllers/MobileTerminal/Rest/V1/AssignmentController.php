@@ -268,7 +268,7 @@ class AssignmentController extends BaseController
         if ($acceptedAssignment->serve_user_id != $user->id) {
             return self::notAllowed();
         } else {
-            $acceptedAssignment = $this->assignmentService->dealAcceptedAssignment($acceptedAssignment);
+            $acceptedAssignment = $this->assignmentService->dealAcceptedAssignment($acceptedAssignment, $user->id);
             return self::success($acceptedAssignment);
         }
     }
@@ -291,7 +291,7 @@ class AssignmentController extends BaseController
         if ($acceptedAssignment->assign_user_id != $user->id) {
             return self::notAllowed();
         } else {
-            $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment);
+            $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment, $user->id);
             return self::success($acceptedAssignment);
         }
     }

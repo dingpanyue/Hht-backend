@@ -1,7 +1,13 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: hasee
- * Date: 2017/11/7
- * Time: 3:20
- */
+namespace App\Http\Controllers\MobileTerminal\Rest\V1;
+
+use App\Http\Controllers\ApiController;
+use GatewayWorker\Gateway;
+
+class UserController extends ApiController
+{
+    public function bindUserIdAndClientId()
+    {
+        
+    }
+}

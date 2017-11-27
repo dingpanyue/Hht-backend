@@ -17,7 +17,6 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     //登录
     Route::post('/login', 'LoginController@login');
 
-
     //委托接口
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
         //获取所有委托的类目
@@ -34,7 +33,9 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     //用户接口
     Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
-        //
+        //绑定clientId 和 userId
+        Route::get('/bind/{client_id}', ['as' => 'Bind', 'uses' => 'UserController@bindUserIdAndClientId']);
+
     });
 
 

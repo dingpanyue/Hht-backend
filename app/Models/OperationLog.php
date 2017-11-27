@@ -20,7 +20,25 @@ use Illuminate\Database\Eloquent\Model;
  */
 class OperationLog extends Model
 {
-    //
+    const OPERATION_CREATE = 'create';          //创建，即发布  委托 或者 服务
+    const OPERATION_PAY = 'pay';                //支付
+    const OPERATION_ACCEPT = 'accept';         //接受，即接受  委托 或则 服务
+    const OPERATION_ADAPT = 'adapt';           //采纳，采纳 被接受的委托 或者 服务
+    const OPERATION_CANCEL = 'cancel';        //取消
+    const OPERATION_DEAL = 'deal';
+    const OPERATION_FINISH = 'finish';
+
+
+    const STATUS_UNPAID = 'unpaid';
+    const STATUS_COMMITTED = 'committed';
+    const STATUS_WAIT_ACCEPT = 'wait_accept';
+    const STATUS_ADAPTED = 'adapted';
+    const STATUS_CANCELED = 'canceled';
+    const STATUS_DEALT = 'dealt';
+    const STATUS_FINISHED = 'finished';
+    const STATUS_FAILED = 'failed';
+
+
     public $fillable = [
         'operation',
         'table',
@@ -32,5 +50,4 @@ class OperationLog extends Model
         'created_at',
         'updated_at'
     ];
-
 }

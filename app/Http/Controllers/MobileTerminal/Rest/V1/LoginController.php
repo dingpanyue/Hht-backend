@@ -1,11 +1,9 @@
 <?php
-
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Http\Controllers\ApiController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-
 
 class LoginController extends ApiController
 {
@@ -14,6 +12,7 @@ class LoginController extends ApiController
     {
         return 'mobile';
     }
+
     //登录接口，调用了ApiController中一些其他函数succeed\failed，上文未提及，用于接口格式化输出
     public function login(Request $request)
     {
@@ -38,5 +37,4 @@ class LoginController extends ApiController
 
         return json_encode(['message' => 'login failed','code' => 401, 'status' => 'failed']);
     }
-
 }
