@@ -26,8 +26,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $deadline
  * @property integer $status
  * @property string $comment
+ * @property integer $adapted_assignment_id
  * @property string $create_at
  * @property string $updated_at
+ * @property array $operations
  */
 class Assignment extends Model
 {
@@ -36,7 +38,7 @@ class Assignment extends Model
     const STATUS_WAIT_ACCEPT = 1;            //已支付，等待接受委托
     const STATUS_ADAPTED = 2;               //委托已经被接受
     const STATUS_CANCELED = 3;               //委托被发布人取消
-    const STATUS_FINISHED = 4;                //委托逾期无人接受
+    const STATUS_FINISHED = 4;                //委托完成
     const STATUS_FAILED = 5;                 //委托失败
 
     public $fillable = [
@@ -53,7 +55,7 @@ class Assignment extends Model
         'expired_at',
         'deadline',
         'comment',
-        'public_user_id',
+        'user_id',
         'status'
     ];
 

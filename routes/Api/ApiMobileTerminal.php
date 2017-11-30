@@ -26,15 +26,23 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //获取单个委托详情
         Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
         //发布委托
-        Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publish']);
+        Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publishAssignment']);
         //接受委托
-        Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@accept']);
+        Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@acceptAssignment']);
+        //采纳 接受的委托
+        Route::post('/adapt/{id}', ['as' => '', 'uses' => 'AssignmentController@adaptAcceptedAssignment']);
+        //告知完成  被采纳的 接收的委托
+        Route::post('/deal/{id}', ['as' => '', 'uses' => 'AssignmentController@dealAcceptedAssignment']);
+        //确认完成  委托
+        Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
     });
 
     //用户接口
     Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
         //绑定clientId 和 userId
         Route::get('/bind/{client_id}', ['as' => 'Bind', 'uses' => 'UserController@bindUserIdAndClientId']);
+        //对用户发送消息
+        Route::post('/send/{user_id}', ['as' => 'Send', 'uses' => 'UserController@sendMessage']);
 
     });
 

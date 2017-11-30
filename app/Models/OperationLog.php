@@ -28,7 +28,6 @@ class OperationLog extends Model
     const OPERATION_DEAL = 'deal';
     const OPERATION_FINISH = 'finish';
 
-
     const STATUS_UNPAID = 'unpaid';
     const STATUS_COMMITTED = 'committed';
     const STATUS_WAIT_ACCEPT = 'wait_accept';
@@ -37,6 +36,9 @@ class OperationLog extends Model
     const STATUS_DEALT = 'dealt';
     const STATUS_FINISHED = 'finished';
     const STATUS_FAILED = 'failed';
+
+    const TABLE_ASSIGNMENTS = 'assignments';
+    const TABLE_ACCEPTED_ASSIGNMENTS = 'accepted_assignments';
 
 
     public $fillable = [
@@ -50,4 +52,9 @@ class OperationLog extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

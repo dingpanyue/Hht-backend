@@ -10,6 +10,7 @@ use App\Services\Helper;
 use Dotenv\Validator;
 use Exception;
 use function foo\func;
+use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
 
 /**
@@ -48,11 +49,12 @@ class AssignmentController extends BaseController
     {
         $inputs = $request->only('classification', 'keyword', 'order_by', 'order');
         $assignments = $this->assignmentService->getList($inputs);
+        Gateway::sendToAll('hello');
         return self::success($assignments);
     }
 
     //发起委托
-    public function publish(Request $request)
+    public function publishAssignment(Request $request)
     {
         //当前登陆用户
         $user = $this->user;
@@ -126,15 +128,23 @@ class AssignmentController extends BaseController
     //获取单个委托详情
     public function detail($assignmentId)
     {
+        /**
+         * @var $assignment Assignment
+         */
         $assignment = $this->assignmentService->getAssignmentById($assignmentId);
+
         if (!$assignment) {
            return self::resourceNotFound();
         }
+
+        $operations = $this->assignmentService->getAssignmentOperationLog($assignment);
+        $assignment->operations = $operations;
+
         return self::success($assignment);
     }
 
     //接受委托 assign_user
-    public function accept($assignmentId, Request $request)
+    public function acceptAssignment($assignmentId, Request $request)
     {
         $user = $this->user;
 
@@ -145,6 +155,21 @@ class AssignmentController extends BaseController
 
         if (!$assignment) {
             return self::resourceNotFound();
+        }
+
+        //自己不能接受自己发布的委托
+        if ($assignment->user_id == $user->id) {
+            return self::notAllowed('你不能接受自己发布的委托');
+        }
+
+        //不能反复接同一个委托
+        $acceptedAssignments = AcceptedAssignment::where('serve_user_id', $user->id)
+            ->where('parent_id', $assignmentId)
+            ->where('created_from', 'assignment')
+            ->get();
+
+        if (count($acceptedAssignments)) {
+            return self::notAllowed('你不能重复接受该委托');
         }
 
         $inputs = $request->only('reward', 'deadline');
@@ -186,7 +211,6 @@ class AssignmentController extends BaseController
     public function adaptAcceptedAssignment($id)
     {
         $user = $this->user;
-
         /**
          * @var $acceptedAssignment AcceptedAssignment
          */
@@ -278,18 +302,21 @@ class AssignmentController extends BaseController
     {
         $user = $this->user;
 
-        $acceptedAssignment = $this->acceptedAssignmentService->getAcceptedAssignments($id);
+        /**
+         * @var $acceptedAssignment AcceptedAssignment
+         */
+        $acceptedAssignment = $this->acceptedAssignmentService->getAcceptedAssignmentById($id);
 
         if (!$acceptedAssignment) {
             return self::resourceNotFound();
         }
 
         if ($acceptedAssignment->status != AcceptedAssignment::STATUS_ADAPTED && $acceptedAssignment->status != AcceptedAssignment::STATUS_DEALT) {
-            return self::notAllowed();
+            return self::notAllowed('该委托的状态不允许您这么操作');
         }
 
         if ($acceptedAssignment->assign_user_id != $user->id) {
-            return self::notAllowed();
+            return self::notAllowed('您不是该委托的发布人');
         } else {
             $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment, $user->id);
             return self::success($acceptedAssignment);

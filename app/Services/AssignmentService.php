@@ -31,7 +31,7 @@ class AssignmentService
     {
         unset($params['status']);
         $assignment = new Assignment();
-        $params = array_merge($params, ['public_user_id' => $userId, 'status' => $status]);
+        $params = array_merge($params, ['user_id' => $userId, 'status' => $status]);
 
         try {
             $assignment = $assignment->create(
@@ -44,7 +44,7 @@ class AssignmentService
         //日志记录 创建 状态未支付
         $this->operationLogService->log(
             OperationLog::OPERATION_CREATE,
-            Assignment::class,
+            OperationLog::TABLE_ASSIGNMENTS,
             $assignment->id,
             $userId,
             '',
@@ -137,7 +137,7 @@ class AssignmentService
         //记录日志 -- 接受委托
         $this->operationLogService->log(
             OperationLog::OPERATION_ACCEPT,
-            AcceptedAssignment::class,
+            OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
             $acceptedAssignment->id,
             $userId,
             '',
@@ -157,6 +157,7 @@ class AssignmentService
 
             $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
             $assignment->status = Assignment::STATUS_ADAPTED;
+            $assignment->adapted_assignment_id = $acceptedAssignment->id;
             $assignment->save();
 
             return $acceptedAssignment;
@@ -165,7 +166,7 @@ class AssignmentService
         //记录日志 -- 采纳接受的委托
         $this->operationLogService->log(
             OperationLog::OPERATION_ADAPT,
-            AcceptedAssignment::class,
+            OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
             $acceptedAssignment->id,
             $acceptedAssignment->assign_user_id,
             OperationLog::STATUS_COMMITTED,
@@ -173,19 +174,6 @@ class AssignmentService
         );
 
         //todo 发送推送
-        return $acceptedAssignment;
-    }
-
-    //取消 采纳的 接受的委托
-    public function cancelAcceptedAssignment(AcceptedAssignment $acceptedAssignment, $userId)
-    {
-        $acceptedAssignment->status = AcceptedAssignment::STATUS_CANCELED;
-        $acceptedAssignment->save();
-
-        //记录日志
-
-        //todo 发送推送
-
         return $acceptedAssignment;
     }
 
@@ -198,7 +186,7 @@ class AssignmentService
         //日志记录 serve_user解决问题，提交申请让assign_user确认
         $this->operationLogService->log(
             OperationLog::OPERATION_DEAL,
-            AcceptedAssignment::class,
+            OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
             $acceptedAssignment->id,
             $userId,
             OperationLog::STATUS_ADAPTED,
@@ -229,7 +217,7 @@ class AssignmentService
             $assignment->status = Assignment::STATUS_FINISHED;
             $assignment->save();
 
-            //todo 把报酬打到serve_user 账户
+            //todo 把报酬打到serve_user 账户d
 
 
 
@@ -239,7 +227,7 @@ class AssignmentService
         //日志记录委托完成
         $this->operationLogService->log(
             OperationLog::OPERATION_FINISH,
-            AcceptedAssignment::class,
+            OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
             $acceptedAssignment->id,
             $userId,
             $originStatus,
@@ -249,5 +237,11 @@ class AssignmentService
         //todo 推送
 
         return $acceptedAssignment;
+    }
+
+    public function getAssignmentOperationLog(Assignment $assignment)
+    {
+        $operations = $this->operationLogService->getAssignmentOperationLogs($assignment);
+        return $operations;
     }
 }

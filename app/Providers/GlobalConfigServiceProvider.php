@@ -1,7 +1,5 @@
 <?php
-
 namespace App\Providers;
-
 
 use App\Models\AssignmentClassification;
 use App\Models\GlobalConfig;
@@ -10,8 +8,6 @@ use Illuminate\Support\ServiceProvider;
 
 class GlobalConfigServiceProvider extends ServiceProvider
 {
-    public $defer = true;
-
     public function boot()
     {
         //全局变量， 为了方便存储在了数据库中

@@ -30,6 +30,7 @@ class CreateTableAssignments extends Migration
             $table->timestamp('expired_at')->nullable()->comment('委托可接受状态截止时间');
             $table->timestamp('deadline')->nullable()->comment('委托结束期限');
             $table->tinyInteger('status')->comment('发布委托时的备注状态');
+            $table->integer('adapted_assignment_id')->comment('接受的委托的id');
             $table->text('comment')->comment('备注');
             $table->timestamps();
         });
