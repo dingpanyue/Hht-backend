@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "5d7d690249533190e79f9888343b2da9",
+    "content-hash": "da76dc044e7d987b5c7828aa03d4a465",
     "packages": [
         {
             "name": "defuse/php-encryption",
@@ -2700,6 +2700,105 @@
                 "event-loop"
             ],
             "time": "2017-07-14T02:24:43+00:00"
+        },
+        {
+            "name": "yansongda/laravel-pay",
+            "version": "v1.0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yansongda/laravel-pay.git",
+                "reference": "0cc07648863de6524add2038acd08316d9b74cbf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/yansongda/laravel-pay/0cc07648863de6524add2038acd08316d9b74cbf.zip",
+                "reference": "0cc07648863de6524add2038acd08316d9b74cbf",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^5.1",
+                "yansongda/pay": "^1.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Yansongda\\LaravelPay\\PayServiceProvider"
+                    ],
+                    "aliases": {
+                        "Pay": "Yansongda\\LaravelPay\\Facades\\Pay"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Yansongda\\LaravelPay\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "yansongda",
+                    "email": "me@yansongda.cn"
+                }
+            ],
+            "description": "专注 Alipay 和 WeChat 的 laravel 支付扩展包",
+            "keywords": [
+                "alipay",
+                "laravel",
+                "package",
+                "pay",
+                "wechat"
+            ],
+            "time": "2017-09-05T02:06:29+00:00"
+        },
+        {
+            "name": "yansongda/pay",
+            "version": "v1.2.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/yansongda/pay.git",
+                "reference": "f4b4170bb894c77f403846cfc146a522c1ab1e83"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/yansongda/pay/f4b4170bb894c77f403846cfc146a522c1ab1e83.zip",
+                "reference": "f4b4170bb894c77f403846cfc146a522c1ab1e83",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "^6.3",
+                "php": ">=5.6"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Yansongda\\Pay\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "yansongda",
+                    "email": "me@yansongda.cn"
+                }
+            ],
+            "description": "专注 Alipay 和 WeChat 的支付扩展包",
+            "keywords": [
+                "alipay",
+                "pay",
+                "wechat"
+            ],
+            "time": "2017-09-20T03:49:49+00:00"
         },
         {
             "name": "zendframework/zend-diactoros",

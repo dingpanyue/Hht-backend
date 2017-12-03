@@ -37,13 +37,23 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
     });
 
+    //服务接口
+
+
     //用户接口
     Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
         //绑定clientId 和 userId
         Route::get('/bind/{client_id}', ['as' => 'Bind', 'uses' => 'UserController@bindUserIdAndClientId']);
         //对用户发送消息
         Route::post('/send/{user_id}', ['as' => 'Send', 'uses' => 'UserController@sendMessage']);
+        //
 
+    });
+
+    //支付接口
+    Route::group(['prefix' => 'pay'], function () {
+        //绑定clientId 和 userId
+        Route::get('/pay', ['as' => 'Bind', 'uses' => 'PayController@pay']);
     });
 
 
