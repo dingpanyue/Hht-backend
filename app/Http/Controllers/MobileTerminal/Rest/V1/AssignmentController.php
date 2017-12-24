@@ -49,7 +49,6 @@ class AssignmentController extends BaseController
     {
         $inputs = $request->only('classification', 'keyword', 'order_by', 'order');
         $assignments = $this->assignmentService->getList($inputs);
-        Gateway::sendToAll('hello');
         return self::success($assignments);
     }
 
@@ -165,7 +164,6 @@ class AssignmentController extends BaseController
         //不能反复接同一个委托
         $acceptedAssignments = AcceptedAssignment::where('serve_user_id', $user->id)
             ->where('parent_id', $assignmentId)
-            ->where('created_from', 'assignment')
             ->get();
 
         if (count($acceptedAssignments)) {
@@ -223,13 +221,14 @@ class AssignmentController extends BaseController
         $assignmentId = $acceptedAssignment->parent_id;
 
         $adaptedAcceptedAssignments = $this->acceptedAssignmentService->getAcceptedAssignments(
-            null, null,'assignment', $assignmentId, AcceptedAssignment::STATUS_ADAPTED
+            null, null, $assignmentId, AcceptedAssignment::STATUS_ADAPTED
         );
 
         //已经采纳过其他委托的情况
         if ($adaptedAcceptedAssignments->count() != 0){
             return self::notAllowed();
         }
+
         if ($acceptedAssignment->status != AcceptedAssignment::STATUS_SUBMITTED) {
             return self::notAllowed();
         }

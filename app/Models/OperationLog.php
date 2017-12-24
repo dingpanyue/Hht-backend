@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 class OperationLog extends Model
 {
     const OPERATION_CREATE = 'create';          //创建，即发布  委托 或者 服务
+    const OPERATION_BUY = 'buy';                //购买服务
     const OPERATION_PAY = 'pay';                //支付
     const OPERATION_ACCEPT = 'accept';         //接受，即接受  委托 或则 服务
     const OPERATION_ADAPT = 'adapt';           //采纳，采纳 被接受的委托 或者 服务
@@ -30,6 +31,7 @@ class OperationLog extends Model
 
     const STATUS_UNPAID = 'unpaid';
     const STATUS_COMMITTED = 'committed';
+    const STATUS_PUBLISHED = 'published';
     const STATUS_WAIT_ACCEPT = 'wait_accept';
     const STATUS_ADAPTED = 'adapted';
     const STATUS_CANCELED = 'canceled';
@@ -38,7 +40,9 @@ class OperationLog extends Model
     const STATUS_FAILED = 'failed';
 
     const TABLE_ASSIGNMENTS = 'assignments';
+    const TABLE_SERVICES = 'services';
     const TABLE_ACCEPTED_ASSIGNMENTS = 'accepted_assignments';
+    const TABLE_ACCEPTED_SERVICES = 'accepted_services';
 
 
     public $fillable = [

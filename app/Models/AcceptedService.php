@@ -14,11 +14,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $created_at
  * @property string $updated_at
  */
-class AcceptedAssignment extends Model
+class AcceptedService extends Model
 {
     const STATUS_SUBMITTED = 1;
-    const STATUS_ADAPTED = 2;
-    const STATUS_CANCELED = 3;
+    const STATUS_UNPAID = 2;
+    const STATUS_ADAPTED = 3;
     const STATUS_DEALT = 4;
     const STATUS_FINISHED = 5;
     const STATUS_FAILED = 6;
@@ -36,7 +36,7 @@ class AcceptedAssignment extends Model
     ];
 
     //创建者（委托或者服务）
-    public function assignment()
+    public function service()
     {
         return $this->belongsTo(Assignment::class,'parent_id');
     }

@@ -100,7 +100,6 @@ class AssignmentService
         if ($assignment->reward && $assignment->deadline) {
             $acceptedAssignment = $acceptedAssignment->create(
                 [
-                    'created_from' => 'assignment',
                     'assign_user_id' => $assignment->user_id,
                     'serve_user_id' => $userId,
                     'parent_id' => $assignment->id,
@@ -122,7 +121,6 @@ class AssignmentService
 
             $acceptedAssignment = $acceptedAssignment->create(
                 [
-                    'created_from' => 'assignment',
                     'assign_user_id' => $assignment->user_id,
                     'serve_user_id' => $userId,
                     'parent_id' => $assignment->id,

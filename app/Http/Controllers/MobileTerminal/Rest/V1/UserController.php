@@ -6,6 +6,11 @@ use Illuminate\Http\Request;
 
 class UserController extends BaseController
 {
+    public function authentication(Request $request)
+    {
+        $inputs = $request->only('', '', '');
+
+    }
 
     //绑定客户端id 和 用户id
     public function bindUserIdAndClientId($clientId)
@@ -30,7 +35,4 @@ class UserController extends BaseController
         ];
         Gateway::sendToUid($toUserId, json_encode($data));
     }
-
-
-
 }

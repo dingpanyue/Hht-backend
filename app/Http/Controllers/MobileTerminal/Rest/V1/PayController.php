@@ -6,9 +6,18 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
  * Date: 2017/12/3
  * Time: 3:36
  */
+use App\Models\AcceptedService;
 use App\Models\Assignment;
+use App\Models\OperationLog;
 use App\Models\Order;
+use App\Services\AcceptedServiceService;
 use App\Services\AssignmentService;
+use App\Services\FlowLogService;
+use App\Services\OperationLogService;
+use App\Services\OrderService;
+use App\Services\ServiceService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Yansongda\Pay\Pay;
 use Illuminate\Http\Request;
 
@@ -16,9 +25,25 @@ class PayController extends BaseController
 {
     protected $assignmentService;
 
-    public function __construct(AssignmentService $assignmentService)
+    protected $acceptedServiceService;
+
+    protected $orderService;
+
+    protected $operationLogService;
+
+    protected $flowLogService;
+
+    public function __construct(AssignmentService $assignmentService, AcceptedServiceService $acceptedServiceService, OrderService $orderService, OperationLogService $operationLogService, FlowLogService $flowLogService)
     {
         $this->assignmentService = $assignmentService;
+
+        $this->acceptedServiceService = $acceptedServiceService;
+
+        $this->orderService = $orderService;
+
+        $this->operationLogService = $operationLogService;
+
+        $this->flowLogService = $flowLogService;
 
         parent::__construct();
     }
@@ -39,7 +64,7 @@ class PayController extends BaseController
      * @param $pk   integer 主键  assignment 和 service 的id
      * @return mixed
      */
-    public function index(Request $request)
+    public function pay(Request $request)
     {
         $input = $request->only('type', 'method', 'pk');
 
@@ -81,7 +106,7 @@ class PayController extends BaseController
             $order = new Order();
             $order->user_id = $this->user->id;
             $order->type = $type;
-            $order->primaryKey = $pk;
+            $order->primary_key = $pk;
             $order->method = $method;
             $order->fee = $assignment->reward;
             $order->out_trade_no = 'ASSIGN'.time();
@@ -89,17 +114,33 @@ class PayController extends BaseController
             $order->save();
         }
 
-        //如果是服务单
+        //如果是服务单  与 委托单不同   支付主体为附表
         if ($type == Order::TYPE_SERVICE) {
+            /**
+             * @var $acceptedService AcceptedService
+             */
+            $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($pk);
 
-            //todo 服务部分逻辑
+            if (!$acceptedService) {
+                return self::resourceNotFound();
+            }
+
+            if ($acceptedService->status != AcceptedService::STATUS_UNPAID) {
+                return self::notAllowed();
+            }
+
+            if ($acceptedService->assign_user_id != $this->user->id) {
+                return self::notAllowed("你不是这条服务的购买，无法支付");
+            }
+
+            //创建订单
             $order = new Order();
             $order->user_id = $this->user->id;
             $order->type = $type;
-            $order->primaryKey = $pk;
+            $order->primary_key = $pk;
             $order->method = $method;
-//            $order->fee = $assignment->reward;
-            $order->out_trade_no = 'ASSIGN'.time();
+            $order->fee = $acceptedService->reward;
+            $order->out_trade_no = 'SERVICE'.time();
             $order->status = Order::STATUS_PREPARING;
             $order->save();
         }
@@ -120,14 +161,70 @@ class PayController extends BaseController
         }
     }
 
+    //异步通知
     public function notify(Request $request)
     {
         $pay = new Pay($this->config);
 
+        //支付宝通知
         if ($pay->driver('alipay')->gateway()->verify($request->all())) {
+
+            $outTradeNo = $request->out_trade_no;
+            $totalAmount = $request->total_amount;
+
             file_put_contents(storage_path('notify.txt'), "收到来自支付宝的异步通知\r\n", FILE_APPEND);
             file_put_contents(storage_path('notify.txt'), '订单号：' . $request->out_trade_no . "\r\n", FILE_APPEND);
             file_put_contents(storage_path('notify.txt'), '订单金额：' . $request->total_amount . "\r\n\r\n", FILE_APPEND);
+
+            /**
+             * @var $order Order
+             */
+            $order = $this->orderService->getOrderByOutTradeNo($outTradeNo);
+
+            //如果回调的时候，订单已经是成功状态
+            if (!$order->status == Order::STATUS_SUCCEED) {
+                Log::warning("订单$order->id, 在回调时已经是已支付状态");
+            }
+
+
+            DB::transaction(function () use ($order) {
+                //改变订单状态
+                $order->status = Order::STATUS_SUCCEED;
+                $order->save();
+
+                if ($order->type == Order::TYPE_ASSIGNMENT) {
+                    /**
+                     * @var $assignment Assignment
+                     */
+                    //改变委托状态
+                    $assignment = $this->assignmentService->getAssignmentById($order->primary_key);
+                    $assignment->status = Assignment::STATUS_WAIT_ACCEPT;
+                    $assignment->save();
+
+                    //记录委托操作日志
+                    $this->operationLogService->log(
+                        OperationLog::OPERATION_PAY,
+                        OperationLog::TABLE_ASSIGNMENTS,
+                        $assignment->id,
+                        $assignment->user_id,
+                        OperationLog::STATUS_UNPAID,
+                        OperationLog::STATUS_WAIT_ACCEPT
+                    );
+
+                    //记录流水日志
+                    $this->flowLogService->log(
+                        $assignment->user_id,
+                        'orders',
+                        'alipay',
+                        $order->id,
+                        $assignment->reward
+                    );
+                }
+
+                
+
+            });
+
         } else {
             file_put_contents(storage_path('notify.txt'), "收到异步通知\r\n", FILE_APPEND);
         }

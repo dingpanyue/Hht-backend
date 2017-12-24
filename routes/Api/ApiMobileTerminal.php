@@ -46,7 +46,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/bind/{client_id}', ['as' => 'Bind', 'uses' => 'UserController@bindUserIdAndClientId']);
         //对用户发送消息
         Route::post('/send/{user_id}', ['as' => 'Send', 'uses' => 'UserController@sendMessage']);
-        //
+        //提交
 
     });
 

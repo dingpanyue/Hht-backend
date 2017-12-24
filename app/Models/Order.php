@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @package App\Models
  * @property integer $id
  * @property string $type
- * @property integer $primaryKey
+ * @property integer $primary_key
  * @property string $method
  * @property number $fee
  * @property string $out_trade_no

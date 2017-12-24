@@ -1,8 +1,9 @@
 <?php
-
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Http\Controllers\ApiController;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Facades\Validator;
@@ -10,12 +11,14 @@ use Illuminate\Support\Facades\Validator;
 
 class RegisterController extends ApiController
 {
-    //注册接口
-    public function login(Request $request)
+
+    public function register(Request $request)
     {
+        //todo 验证码
+        
         $validator = Validator::make($request->all(), [
-            'mobile'    => 'required|exists:users',
-            'sms_code'  =>  'required|',
+            'mobile'    => 'required|unique:users,mobile',
+            'sms_code'  =>  'required',
             'password' => 'required|between:6,32',
         ]);
 
@@ -27,12 +30,25 @@ class RegisterController extends ApiController
             return $this->sendFailedLoginResponse($request);
         }
 
-        $credentials = $this->credentials($request);
+        event(new Registered($user = $this->create($request->all())));
 
-        if ($this->guard('api')->attempt($credentials, $request->has('remember'))) {
-            return $this->sendLoginResponse($request);
-        }
+        return json_encode($user);
+    }
 
-        return json_encode(['message' => 'login failed','code' => 401, 'status' => 'failed']);
+
+
+    /**
+     * Create a new user instance after a valid registration.
+     *
+     * @param  array  $data
+     * @return \App\Models\User
+     */
+    protected function create(array $data)
+    {
+        return User::create([
+            'name' => 'user'.time(),
+            'password' => bcrypt($data['password']),
+            'mobile' => $data['mobile']
+        ]);
     }
 }

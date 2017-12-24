@@ -24,7 +24,7 @@ class AcceptedAssignmentService
         return $acceptedAssignment;
     }
 
-    public function getAcceptedAssignments($serveUserId = null, $assignUserId = null, $createdFrom = null, $parentId = null, $status = null)
+    public function getAcceptedAssignments($serveUserId = null, $assignUserId = null, $parentId = null, $status = null)
     {
         $acceptedAssignments = $this->acceptedAssignmentEloqument;
 
@@ -34,10 +34,6 @@ class AcceptedAssignmentService
 
         if ($assignUserId) {
             $acceptedAssignments = $acceptedAssignments->where('assign_user_id', $assignUserId);
-        }
-
-        if ($createdFrom) {
-            $acceptedAssignments = $acceptedAssignments->where('created_from', $createdFrom);
         }
 
         if ($parentId) {
