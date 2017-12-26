@@ -4,6 +4,9 @@ use App\Http\Controllers\Controller;
 use App\Models\RestLog;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Validator;
 
 /**
  * Created by PhpStorm.
@@ -38,6 +41,8 @@ class BaseController extends Controller
     const CODE_NOT_ALLOWED                         = 200010;//禁止操作
 
     const CODE_ASSIGNMENT_STATUS_NOT_ALLOWED    =   200100; //委托状态不允许操作
+
+    const CODE_FAIL_TO_SAVE_IMAGE =         200200;        //图片保存出错
 
 
     /**
@@ -142,5 +147,61 @@ class BaseController extends Controller
         ];
 
         return \Response::json($result);
+    }
+
+    public function uploadFile(\Illuminate\Http\Request $request)
+            {
+                if($request->isMethod('post')){
+                    $all = $request->all();
+                    $rules = [
+                        'upFile'=>'required',
+            ];
+            $messages = [
+                'upFile.required'=>'请选择要上传的文件'
+            ];
+            $validator = Validator::make($all,$rules,$messages);
+            if($validator->fails()){
+                return back()->withErrors($validator);
+            }
+            //获取上传文件的大小
+            $size = $request->file('upFile')->getSize();
+            //这里可根据配置文件的设置，做得更灵活一点
+            if($size > 2*1024*1024){
+                return back()->with('errors','上传文件不能超过2M');
+            }
+            //文件类型
+            $mimeType = $request->file('upFile')->getMimeType();
+            //这里根据自己的需求进行修改
+            if($mimeType != 'image/png'){
+                return back()->with('errors','只能上传png格式的图片');
+            }
+            //扩展文件名
+            $ext = $request->file('upFile')->getClientOriginalExtension();
+            //判断文件是否是通过HTTP POST上传的
+            $realPath = $request->file('upFile')->getRealPath();
+
+            if(!$realPath){
+                return back()->with('errors','非法操作');
+            }
+
+            //创建以当前日期命名的文件夹
+            $today = date('Y-m-d');
+            //storage_path().'/app/uploads/' 这里根据 /config/filesystems.php 文件里面的配置而定
+            //$dir = str_replace('\\','/',storage_path().'/app/uploads/'.$today);
+            $dir = storage_path().'/app/public/images/'.$today;
+            if(!is_dir($dir)){
+                mkdir($dir);
+            }
+
+            //上传文件
+            $filename = uniqid().'.'.$ext;//新文件名
+            if(Storage::disk('public')->put('/images/'.$today.'/'.$filename,file_get_contents($realPath))){
+                return URL::asset("/images/$today/$filename");
+            }else{
+                return false;
+            }
+        }else{
+            return false;
+        }
     }
 }

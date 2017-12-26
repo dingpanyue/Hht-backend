@@ -20,8 +20,9 @@ class CreateTableUserInfo extends Migration
             $table->integer('user_id')->index()->comment('用户的id');
             $table->string('real_name')->index()->comment('用户真实姓名');
             $table->string('card_no')->index()->comment('用户身份证号码');
-            $table->decimal('balance')->comment('余额');
-            $table->integer('points')->comment('成功之后所获得的 积分');
+            $table->decimal('balance')->default(0)->comment('余额');
+            $table->integer('assign_points')->default(0)->comment('成功之后所获得的 积分');
+            $table->integer('serve_points')->default(0)->comment('成功之后所获得的 积分');
             $table->string('status')->comment('状态');
             $table->timestamps();
         });

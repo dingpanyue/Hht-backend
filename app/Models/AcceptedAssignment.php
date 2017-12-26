@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $comment
  * @property string $created_at
  * @property string $updated_at
+ * @property User $serveUser
+ * @property User $assignUser
  */
 class AcceptedAssignment extends Model
 {
@@ -20,8 +22,10 @@ class AcceptedAssignment extends Model
     const STATUS_ADAPTED = 2;
     const STATUS_CANCELED = 3;
     const STATUS_DEALT = 4;
-    const STATUS_FINISHED = 5;
-    const STATUS_FAILED = 6;
+    const STATUS_ARBITRATED = 5;               //委托仲裁中
+    const STATUS_FINISHED = 6;
+    const STATUS_FAILED = 7;
+
 
     public $fillable = [
         'assign_user_id',

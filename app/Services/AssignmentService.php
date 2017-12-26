@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\OperationLog;
+use App\Models\User;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Support\Facades\DB;
 use Mockery\Exception;
@@ -76,13 +77,22 @@ class AssignmentService
         }
 
         $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
+
+        if ($params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
+            foreach ($assignments as $k => $assignment) {
+                $distance = Helper::getDistance($params['lng'], $params['lat'], $assignment->lng, $assignment->lat);
+                if ($distance > 5) {
+                    unset($assignments[$k]);
+                }
+            }
+        }
         return $assignments;
     }
 
     //获取指定委托
     public function getAssignmentById($assignmentId)
     {
-        $assignment = $this->assignmentEloqument->with('user')->find($assignmentId);
+        $assignment = $this->assignmentEloqument->with('user')->with('acceptedAssignments')->find($assignmentId);
         return $assignment;
     }
 
@@ -206,7 +216,10 @@ class AssignmentService
             $originStatus = OperationLog::STATUS_DEALT;
         }
 
-        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment) {
+        $globalConfigs = app('global_configs');
+        $rate = $globalConfigs['service_fee_rate'];
+
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $rate) {
 
             $acceptedAssignment->status = AcceptedAssignment::STATUS_FINISHED;
             $acceptedAssignment->save();
@@ -215,9 +228,25 @@ class AssignmentService
             $assignment->status = Assignment::STATUS_FINISHED;
             $assignment->save();
 
-            //todo 把报酬打到serve_user 账户d
+            //把报酬打到serve_user 账户          增加服务星级
+            $serveUser = $acceptedAssignment->serveUser;
+            $serveUserInfo = $serveUser->userInfo;
+
+            //更新余额
+            $serveUserInfo->balance = $serveUserInfo->balance + $acceptedAssignment->reward * (1 - $rate);
+            //更新积分
+            $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedAssignment->reward;
+            $serveUserInfo->save();
+
+            //todo 增加流水记录（余额的形式）
+
+            $assignUser = $acceptedAssignment->assignUser;
+            $assignUserInfo = $assignUser->userInfo;
 
 
+            //更新委托人积分
+            $assignUserInfo->assign_points = $assignUserInfo->assign_ponts + (int)$acceptedAssignment->reward;
+            $assignUserInfo->save();
 
             return $acceptedAssignment;
         });
@@ -237,9 +266,45 @@ class AssignmentService
         return $acceptedAssignment;
     }
 
+    public function refuseFinishingAcceptedAssignment(AcceptedAssignment $acceptedAssignment, $userId)
+    {
+        $acceptedAssignment->status = AcceptedAssignment::STATUS_ARBITRATED;
+        $acceptedAssignment->save();
+
+        //日志记录 assign_user拒绝解决问题，提交申请让assign_user确认
+        $this->operationLogService->log(
+            OperationLog::OPERATION_REFUSE_FINISH,
+            OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
+            $acceptedAssignment->id,
+            $userId,
+            OperationLog::STATUS_DEALT,
+            OperationLog::STATUS_ARBITRATED
+        );
+
+        //todo 推送给客服
+
+        return $acceptedAssignment;
+
+    }
+
     public function getAssignmentOperationLog(Assignment $assignment)
     {
         $operations = $this->operationLogService->getAssignmentOperationLogs($assignment);
         return $operations;
+    }
+
+    //我发布的委托
+    public function getAssignmentsByUser(User $user, $status = 'all')
+    {
+        //自己发布的委托
+        $assignments = $this->assignmentEloqument->with('acceptedAssignments')->where('user_id', $user->id)->orderBy('status', 'asc');
+
+        if ($status != 'all') {
+            $assignments->where('status', $status);
+        }
+
+        $assignments = $assignments->get();
+
+        return $assignments;
     }
 }

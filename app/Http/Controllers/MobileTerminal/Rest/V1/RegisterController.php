@@ -17,7 +17,7 @@ class RegisterController extends ApiController
         //todo 验证码
         
         $validator = Validator::make($request->all(), [
-            'mobile'    => 'required|unique:users,mobile',
+            'mobile'    => 'required|unique:users,mobile|regex:/^1[34578][0-9]{9}$/',
             'sms_code'  =>  'required',
             'password' => 'required|between:6,32',
         ]);

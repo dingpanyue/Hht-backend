@@ -7,6 +7,8 @@ use App\Models\GlobalConfig;
 use App\Services\AcceptedAssignmentService;
 use App\Services\AssignmentService;
 use App\Services\Helper;
+use App\Transformers\AcceptedAssignmentTransformer;
+use App\Transformers\AssignmentTransformer;
 use Dotenv\Validator;
 use Exception;
 use function foo\func;
@@ -41,16 +43,17 @@ class AssignmentController extends BaseController
         return self::success($categories);
     }
 
-    //获取所有委托列表
+    //获取所有委托列表 near_by为true且包含lng，lat的时候，会得到5公里以内的
     /**
      * @param Request $request
      */
     public function index(Request $request)
     {
-        $inputs = $request->only('classification', 'keyword', 'order_by', 'order');
+        $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat');
         $assignments = $this->assignmentService->getList($inputs);
         return self::success($assignments);
     }
+
 
     //发起委托
     public function publishAssignment(Request $request)
@@ -66,13 +69,6 @@ class AssignmentController extends BaseController
         $classificationArray = collect(app('assignment_classifications'))->pluck('id')->toArray();
         $classificationString = implode(',', $classificationArray);
 
-        //这两个字段是可以选择性的填写的
-        foreach (['reward', 'deadline'] as $key) {
-            if ($inputs[$key] == '')
-            {
-                unset($inputs[$key]);
-            }
-        }
 
         $validator =  $validator = app('validator')->make($inputs, [
             "title" => "required|max:{$globalConfigs['assignment_title_limit']}",
@@ -83,8 +79,9 @@ class AssignmentController extends BaseController
             "lng" => "required|numeric|min:-180|max:180",
             "lat" => "required|numeric|min:-90|max:90",
             "detail_address" => "required",
-            "reward" => "numeric|min:0",
-            "expired_at" => "date|after:now",
+            "reward" => "required|numeric|min:0",
+            "expired_at" => "required|date|after:now",
+            'deadline' => "required|date|after:now",
         ], [
             "title.required" => "委托标题必须填写",
             "title.max" => "委托标题必须在{$globalConfigs['assignment_title_limit']}以内",
@@ -296,6 +293,33 @@ class AssignmentController extends BaseController
         }
     }
 
+    //拒绝完成 被告知完成的委托  assign_user
+    public function refuseFinishingAcceptedAssignment($id)
+    {
+        $user = $this->user;
+
+        /**
+         * @var $acceptedAssignment AcceptedAssignment
+         */
+        $acceptedAssignment = $this->acceptedAssignmentService->getAcceptedAssignmentById($id);
+
+        if (!$acceptedAssignment) {
+            return self::resourceNotFound();
+        }
+
+        if ($acceptedAssignment->status != AcceptedAssignment::STATUS_DEALT) {
+            return self::notAllowed();
+        }
+
+        if ($acceptedAssignment->assign_user_id != $user->id) {
+            return self::notAllowed();
+        } else {
+            $acceptedAssignment = $this->assignmentService->fefuseFinishingAcceptedAssignment($acceptedAssignment, $user->id);
+            return self::success($acceptedAssignment);
+        }
+
+    }
+
     //确认委托成功 assign_user
     public function finishAcceptedAssignment($id)
     {
@@ -321,5 +345,38 @@ class AssignmentController extends BaseController
             return self::success($acceptedAssignment);
         }
     }
+
+    //我发布的委托 请求参数中有 status，可以过滤状态 (用于我的  列表)
+    public function myAssignments(Request $request)
+    {
+        $user = $this->user;
+
+        $inputs = $request->all();
+
+        if (isset($inputs['status'])) {
+            $assignments = $this->assignmentService->getAssignmentsByUser($user, $inputs['status']);
+        } else {
+            $assignments = $this->assignmentService->getAssignmentsByUser($user);
+        }
+
+        return self::success(AssignmentTransformer::transformList($assignments));
+    }
+
+    //我作为服务方接受的委托     请求参数中有status,可以过滤状态 （用于我的  列表）
+    public function myAcceptedAssignments(Request $request)
+    {
+        $user = $this->user;
+
+        $inputs = $request->all();
+
+        if (isset($inputs['status'])) {
+            $acceptedAssignments = $this->acceptedAssignmentService->getAcceptedAssignmentsByUser($user, $inputs['status']);
+        } else {
+            $acceptedAssignments = $this->acceptedAssignmentService->getAcceptedAssignmentsByUser($user);
+        }
+
+        return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments));
+    }
+
 
 }

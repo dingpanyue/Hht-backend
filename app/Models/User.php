@@ -31,4 +31,9 @@ class User extends Authenticatable
     {
         return self::where('mobile', $username)->first();
     }
+
+    public function userInfo()
+    {
+        return $this->hasOne(UserInfo::class, 'user_id');
+    }
 }

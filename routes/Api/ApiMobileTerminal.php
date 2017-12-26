@@ -38,7 +38,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     });
 
     //服务接口
-
+    Route::group(['prefix' => 'service', 'middleware' => 'auth:api'], function () {
+        //发布服务
+        Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publish']);
+    });
 
     //用户接口
     Route::group(['prefix' => 'user', 'middleware' => 'auth:api'], function () {
@@ -46,8 +49,14 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/bind/{client_id}', ['as' => 'Bind', 'uses' => 'UserController@bindUserIdAndClientId']);
         //对用户发送消息
         Route::post('/send/{user_id}', ['as' => 'Send', 'uses' => 'UserController@sendMessage']);
-        //提交
-
+        //提交认证信息
+        Route::post('/authentication', ['as' => '', 'uses' => 'UserController@authentication']);
+        //上传头像
+        Route::post('/upload', ['as' => '', 'uses' => 'UserController@upload']);
+        //用户的发布所有委托
+        Route::get('/assignments', ['as' => '', 'uses' => 'AssignmentController@myAssignments']);
+        //用户作为服务者接受的所有委托
+        Route::get('/accepted_assignments', ['as' => '', 'uses' => 'AssignmentController@myAcceptedAssignments']);
     });
 
     //支付接口
@@ -55,6 +64,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //绑定clientId 和 userId
         Route::get('/pay', ['as' => 'Bind', 'uses' => 'PayController@pay']);
     });
+
 
 
 

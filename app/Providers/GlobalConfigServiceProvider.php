@@ -1,6 +1,7 @@
 <?php
 namespace App\Providers;
 
+use App\Models\Assignment;
 use App\Models\AssignmentClassification;
 use App\Models\GlobalConfig;
 use App\Services\Helper;

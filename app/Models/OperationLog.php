@@ -28,6 +28,7 @@ class OperationLog extends Model
     const OPERATION_CANCEL = 'cancel';        //取消
     const OPERATION_DEAL = 'deal';
     const OPERATION_FINISH = 'finish';
+    const OPERATION_REFUSE_FINISH = 'refuse_finish';
 
     const STATUS_UNPAID = 'unpaid';
     const STATUS_COMMITTED = 'committed';
@@ -38,6 +39,7 @@ class OperationLog extends Model
     const STATUS_DEALT = 'dealt';
     const STATUS_FINISHED = 'finished';
     const STATUS_FAILED = 'failed';
+    const STATUS_ARBITRATED = 'arbitrated';
 
     const TABLE_ASSIGNMENTS = 'assignments';
     const TABLE_SERVICES = 'services';

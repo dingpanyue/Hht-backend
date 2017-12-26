@@ -8,6 +8,7 @@ namespace App\Services;
  */
 
 use App\Models\AcceptedAssignment;
+use App\Models\User;
 
 class AcceptedAssignmentService
 {
@@ -44,6 +45,19 @@ class AcceptedAssignmentService
             $acceptedAssignments = $acceptedAssignments->where('status', $status);
         }
 
+        return $acceptedAssignments;
+    }
+
+    //获取我作为服务者接受的委托
+    public function getAcceptedAssignmentsByUser(User $user, $status = 'all')
+    {
+        $acceptedAssignments = $this->acceptedAssignmentEloqument->with('assignment')->where('serve_user_id', $user->id)->orderBy('status', 'asc');
+
+        if ($status != 'all') {
+            $acceptedAssignments = $acceptedAssignments->where('status', $status);
+        }
+
+        $acceptedAssignments = $acceptedAssignments->get();
         return $acceptedAssignments;
     }
 
