@@ -20,8 +20,9 @@ class AcceptedService extends Model
     const STATUS_UNPAID = 2;
     const STATUS_ADAPTED = 3;
     const STATUS_DEALT = 4;
-    const STATUS_FINISHED = 5;
-    const STATUS_FAILED = 6;
+    const STATUS_ARBITRATED = 5;
+    const STATUS_FINISHED = 6;
+    const STATUS_FAILED = 7;
 
     public $fillable = [
         'assign_user_id',
@@ -38,7 +39,7 @@ class AcceptedService extends Model
     //创建者（委托或者服务）
     public function service()
     {
-        return $this->belongsTo(Assignment::class,'parent_id');
+        return $this->belongsTo(Service::class,'parent_id');
     }
 
     //委托人

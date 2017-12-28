@@ -7,6 +7,7 @@ namespace App\Services;
  * Time: 22:01
  */
 
+use App\Models\AcceptedService;
 use App\Models\Assignment;
 use App\Models\OperationLog;
 use App\Models\Service;
@@ -57,7 +58,18 @@ class OperationLogService
         return $operations;
     }
 
-    public function getServiceOperationLogs(Service $service) {
+    //和assignment不同 ，这里的主体必须是acceptedService
+    public function getServiceOperationLogs(AcceptedService $acceptedService) {
+        //申请购买之前的操作       也就是创建
+        $operationsBeforeBought = $this->operationLogEloqument->with('user')->where('table', OperationLog::TABLE_SERVICES)
+            ->where('primary_key', $acceptedService->parent_id)->orderBy('created_at', 'asc')->get()->toArray();
 
+        //申请购买之后的操作
+        $operationsAfterBought = $this->operationLogEloqument->with('user')->where('table',OperationLog::TABLE_ACCEPTED_SERVICES)
+            ->where('primary_key',$acceptedService->id)->orderBy('created_at', 'asc')->get()->toArray();
+
+        $operations = array_merge($operationsBeforeBought, $operationsAfterBought);
+
+        return $operations;
     }
 }

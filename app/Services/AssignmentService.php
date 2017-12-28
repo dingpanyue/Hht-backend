@@ -56,11 +56,11 @@ class AssignmentService
     }
 
     //获取委托列表
-    public function getList($params, array $status = [Assignment::STATUS_WAIT_ACCEPT])
+    public function getList($params,  $status = Assignment::STATUS_WAIT_ACCEPT)
     {
         $params = array_filter($params);
 
-        $assignments = $this->assignmentEloqument->where('status', 'in', $status);
+        $assignments = $this->assignmentEloqument->with('user')->with('user.userInfo')->where('status', $status)->whereDate('expired_at', '>', date('Y-m-d H:i:s'));
         if (isset($params['classification'])) {
             $assignments = $assignments->where('classification', $params['classification']);
         }
@@ -78,7 +78,7 @@ class AssignmentService
 
         $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
 
-        if ($params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
+        if (isset($params['near_by']) && $params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
             foreach ($assignments as $k => $assignment) {
                 $distance = Helper::getDistance($params['lng'], $params['lat'], $assignment->lng, $assignment->lat);
                 if ($distance > 5) {

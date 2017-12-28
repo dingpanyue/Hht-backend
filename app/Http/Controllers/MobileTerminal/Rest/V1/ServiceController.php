@@ -11,6 +11,8 @@ use App\Models\AcceptedService;
 use App\Models\Service;
 use App\Services\AcceptedServiceService;
 use App\Services\ServiceService;
+use App\Transformers\AcceptedServiceTransformer;
+use App\Transformers\ServiceTransformer;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -28,7 +30,37 @@ class ServiceController extends BaseController
         
         parent::__construct();
     }
-    
+
+    //输出所有的服务类目
+    public function classifications()
+    {
+        $categories = collect(app('assignment_classifications'));
+        return self::success($categories);
+    }
+
+    //获取所有服务列表
+    public function index(Request $request)
+    {
+        $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat');
+        $services = $this->serviceService->getList($inputs);
+        return self::success($services);
+    }
+
+    //获取单个service详情  主体是service
+    public function detail($id)
+    {
+        $service = $this->serviceService->getServiceDetailById($id);
+        return self::success(ServiceTransformer::transform($service));
+
+    }
+
+    //获取单个 acceptedService 详情  主体是acceptedService
+    public function acceptedServiceDetail($id)
+    {
+        $acceptedService = $this->acceptedServiceService->getAcceptedServiceDetailById($id);
+        return self::success(AcceptedServiceTransformer::transform($acceptedService));
+    }
+
     //发布服务 服务没有deadline 由购买服务的人来决定（因为service好比队列任务，自己不应该决定什么时候完成，也就说会有单个服务很快能完成，但手头大量积压的情况）   reward根据情况可填也可不填
     public function publishService(Request $request)
     {
@@ -36,19 +68,13 @@ class ServiceController extends BaseController
         $user = $this->user;
         //用户输入
         $inputs = $request->only('title', 'classification', 'introduction', 'province_id', 'city_id', 'area_id',
-            'lng', 'lat', 'detail_address', 'reward', 'expired_at', 'comment');
+            'lng', 'lat', 'detail_address',  'expired_at', 'comment');
         //保存在数据库中的全局配置
         $globalConfigs = app('global_configs');
         //分类数组(字符串)
         $classificationArray = collect(app('assignment_classifications'))->pluck('id')->toArray();
         $classificationString = implode(',', $classificationArray);
 
-        //reward字段是可以选择性的填写的
-
-        if ($inputs['reward'] == '')
-        {
-             unset($inputs['reward']);
-        }
 
         $validator = app('validator')->make($inputs, [
             "title" => "required|max:{$globalConfigs['assignment_title_limit']}",
@@ -59,7 +85,6 @@ class ServiceController extends BaseController
             "lng" => "required|numeric|min:-180|max:180",
             "lat" => "required|numeric|min:-90|max:90",
             "detail_address" => "required",
-            "reward" => "numeric|min:0",
             "expired_at" => "date|after:now",
         ], [
             "title.required" => "服务标题必须填写",
@@ -92,12 +117,12 @@ class ServiceController extends BaseController
         }
 
         try {
-            $assignment = $this->serviceService->create($user->id, $inputs);
+            $service = $this->serviceService->create($user->id, $inputs);
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode());
         }
 
-        return self::success($assignment);
+        return self::success(ServiceTransformer::transform($service));
     }
 
     //购买服务
@@ -163,7 +188,7 @@ class ServiceController extends BaseController
 
         $acceptedService= $this->serviceService->buyService($user->id, $service->id, $reward, $deadline);
 
-        return self::success($acceptedService);
+        return self::success(AcceptedServiceTransformer::transform($acceptedService));
     }
 
     //同意 购买者 购买服务
@@ -187,7 +212,7 @@ class ServiceController extends BaseController
             return self::notAllowed();
         } else {
             $acceptedAssignment = $this->serviceService->acceptBoughtService($acceptedService);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
         }
     }
 
@@ -213,7 +238,7 @@ class ServiceController extends BaseController
             return self::notAllowed();
         } else {
             $acceptedAssignment = $this->serviceService->dealAcceptedService($acceptedService);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
         }
     }
 
@@ -239,10 +264,11 @@ class ServiceController extends BaseController
             return self::notAllowed();
         } else {
             $acceptedAssignment = $this->serviceService->finishAcceptedService($acceptedService);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
         }
-
     }
+
+
     
 
 

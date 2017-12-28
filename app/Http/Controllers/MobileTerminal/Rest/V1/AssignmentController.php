@@ -51,6 +51,7 @@ class AssignmentController extends BaseController
     {
         $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat');
         $assignments = $this->assignmentService->getList($inputs);
+        $assignments = AssignmentTransformer::transformList($assignments);
         return self::success($assignments);
     }
 
@@ -359,6 +360,7 @@ class AssignmentController extends BaseController
             $assignments = $this->assignmentService->getAssignmentsByUser($user);
         }
 
+        return self::success($assignments);
         return self::success(AssignmentTransformer::transformList($assignments));
     }
 

@@ -27,7 +27,7 @@ class AssignmentTransformer
         $assignment->status = $statuses[$assignment->status];
 
         if ($assignment->acceptedAssignments) {
-            $assignment->acceptedAssignments = AcceptedAssignmentTransformer::transformList($assignment->acceptedAssignments, false);
+            $assignment->accepted_assignments = AcceptedAssignmentTransformer::transformList($assignment->acceptedAssignments, false);
         }
 
         return $assignment;
@@ -40,6 +40,4 @@ class AssignmentTransformer
         }
         return $assignments;
     }
-
-
 }

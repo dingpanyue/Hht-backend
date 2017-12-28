@@ -27,11 +27,51 @@ class ServiceService
         $this->operationLogService = $operationLogService;
     }
 
-    //获取指定服务
+    //获取指定服务 简略
     public function getServiceById($serviceId)
     {
         $service = $this->serviceEloqument->with('user')->find($serviceId);
         return $service;
+    }
+
+    //根据服务id获取服务信息  附带服务产生的acceptedService中等待处理的信息
+    public function getServiceDetailById($id)
+    {
+        $service = $this->serviceEloqument->with('acceptedServicesCommitted')->with('user')->with('user.userInfo')->find($id);
+        return $service;
+    }
+
+    public function getList($params,  $status = Service::STATUS_PUBLISHED)
+    {
+        $params = array_filter($params);
+
+        $services = $this->serviceEloqument->where('status', $status)->whereDate('expired_at', '>', date('Y-m-d H:i:s'));
+        if (isset($params['classification'])) {
+            $services = $services->where('classification', $params['classification']);
+        }
+        if (isset($params['keyword'])) {
+            $assignments = $services->where('title', 'like', $params['keyword']);
+        }
+        $orderBy = 'created_at';
+        $order = 'desc';
+        if (isset($params['order_by'])) {
+            $orderBy = $params['order_by'];
+        }
+        if (isset($params['order'])) {
+            $order = $params['order'];
+        }
+
+        $services = $services->orderBy($orderBy, $order)->paginate('20');
+
+        if (isset($params['near_by']) && $params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
+            foreach ($services as $k => $service) {
+                $distance = Helper::getDistance($params['lng'], $params['lat'], $service->lng, $service->lat);
+                if ($distance > 5) {
+                    unset($services[$k]);
+                }
+            }
+        }
+        return $services;
     }
 
     public function create($userId, $params, $status = Service::STATUS_PUBLISHED)

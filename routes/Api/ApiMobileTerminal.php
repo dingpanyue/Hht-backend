@@ -38,9 +38,23 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     });
 
     //服务接口
-    Route::group(['prefix' => 'service', 'middleware' => 'auth:api'], function () {
+    Route::group(['prefix' => 'services', 'middleware' => 'auth:api'], function () {
+        //获取所有服务的类目
+        Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
+        //获取单个服务详情
+        Route::get('/{id}/detail', ['as' => '', 'uses' => 'ServiceController@detail']);
+        //获取单个服务实例详情
+        Route::get('/accepted_services/{id}/detail', ['as' => '', 'uses' => 'ServiceController@acceptedServiceDetail']);
         //发布服务
-        Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publish']);
+        Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publishService']);
+        //购买服务 post参数为reward 和 deadline
+        Route::post('/buy/{id}', ['as' => '', 'uses' => 'ServiceController@buyService']);
+        //同意 购买者  购买服务
+        Route::post('/accept/{id}', ['as' => '', 'uses' => 'ServiceController@acceptBoughtService']);
+        //告知完成被接收的委托
+        Route::post('/deal/{id}', ['as' => '', 'uses' => 'ServiceController@dealAcceptedService']);
+        //确认完成被接受的委托
+        Route::post('/finish/{id}', ['as' => '', 'uses' => 'ServiceController@finishAcceptedService']);
     });
 
     //用户接口

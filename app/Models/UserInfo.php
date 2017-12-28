@@ -20,6 +20,10 @@ class UserInfo extends Model
 
     protected $table = 'user_info';
 
-
+    protected $hidden = [
+        'balance',
+        'real_name',
+        'card_no'
+    ];
 
 }

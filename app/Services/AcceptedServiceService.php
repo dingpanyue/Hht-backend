@@ -12,10 +12,12 @@ use App\Models\AcceptedService;
 class AcceptedServiceService
 {
     protected $acceptedServiceEloqument;
+    protected $operationLogService;
 
-    public function __construct(AcceptedService $acceptedServiceEloqument)
+    public function __construct(AcceptedService $acceptedServiceEloqument, OperationLogService $operationLogService)
     {
         $this->acceptedServiceEloqument = $acceptedServiceEloqument;
+        $this->operationLogService = $operationLogService;
     }
 
     public function getAcceptedServiceById($id)
@@ -24,5 +26,17 @@ class AcceptedServiceService
         return $acceptedAssignment;
     }
 
+    public function getAcceptedServiceDetailById($id)
+    {
+        $acceptedService = $this->acceptedServiceEloqument->with('service')->with('assignUser')->with('assignUser.userInfo')->with('serveUser')->with('serveUser.userInfo')->find($id);
+        $operations = $this->getServiceOperationLog($acceptedService);
+        $acceptedService->operations = $operations;
+        return $acceptedService;
+    }
 
+    public function getServiceOperationLog(AcceptedService $acceptedService)
+    {
+        $operations = $this->operationLogService->getServiceOperationLogs($acceptedService);
+        return $operations;
+    }
 }
