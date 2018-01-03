@@ -3,6 +3,7 @@
 namespace App\Transformers;
 
 use App\Models\AcceptedService;
+use App\Services\OperationLogService;
 
 /**
  * Created by PhpStorm.
@@ -22,19 +23,26 @@ class AcceptedServiceTransformer
         AcceptedService::STATUS_FAILED => '失败',
     ];
 
-    public static function transform(AcceptedService $acceptedService)
+    public static function transform(AcceptedService $acceptedService, $includeService = true)
     {
         $statuses = self::$statuses;
         $acceptedService->status = $statuses[$acceptedService->status];
-        $acceptedService->service = ServiceTransformer::transform($acceptedService->service, false);
+
+        if ($includeService) {
+            $acceptedService->service = ServiceTransformer::transform($acceptedService->service, false);
+        }
+
+        if ($acceptedService->operations) {
+            $acceptedService->operations = OperationLogTransformer::transformList($acceptedService->operations);
+        }
 
         return $acceptedService;
     }
 
-    public static function transformList($acceptedServices)
+    public static function transformList($acceptedServices, $includeService =  true)
     {
         foreach ($acceptedServices as $k =>$acceptedService) {
-            $acceptedServices[$k] = self::transform($acceptedService);
+            $acceptedServices[$k] = self::transform($acceptedService, $includeService);
         }
 
         return $acceptedServices;

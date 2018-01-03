@@ -29,7 +29,8 @@ class Order extends Model
     const TYPE_SERVICE = 'service';
 
     const ALIPAY = 'alipay';
-    const WECHAT = 'wechat';
+    const WX= 'wx';
+    const UPACP = 'upacp';
 
     const STATUS_PREPARING = 'preparing';
     const STATUS_SUCCEED = 'succeed';

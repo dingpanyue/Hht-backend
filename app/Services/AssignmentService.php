@@ -152,18 +152,23 @@ class AssignmentService
             OperationLog::STATUS_COMMITTED
         );
 
+        //推送
+        $message = "您发布的委托 $assignment->title 有人申请接受";
+        GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+
         return $acceptedAssignment;
     }
 
     //采纳接受的委托
     public function adaptAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
     {
-        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment) {
+        $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $assignment) {
 
             $acceptedAssignment->status = AcceptedAssignment::STATUS_ADAPTED;
             $acceptedAssignment->save();
 
-            $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
             $assignment->status = Assignment::STATUS_ADAPTED;
             $assignment->adapted_assignment_id = $acceptedAssignment->id;
             $assignment->save();
@@ -181,7 +186,10 @@ class AssignmentService
             OperationLog::STATUS_ADAPTED
         );
 
-        //todo 发送推送
+        //推送
+        $message = "您接受委托 $assignment->title 的申请已被采纳，请在 $acceptedAssignment->deadline 之前完成委托并提交给委托人";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
+
         return $acceptedAssignment;
     }
 
@@ -190,6 +198,8 @@ class AssignmentService
     {
         $acceptedAssignment->status = AcceptedAssignment::STATUS_DEALT;
         $acceptedAssignment->save();
+
+        $assignment = $acceptedAssignment->assignment;
 
         //日志记录 serve_user解决问题，提交申请让assign_user确认
         $this->operationLogService->log(
@@ -201,8 +211,9 @@ class AssignmentService
             OperationLog::STATUS_DEALT
         );
 
-
-        //todo 发送推送
+        //推送
+        $message = "您发布的委托 $assignment->title 的已被提交完成，请核实后确认，如在截止时间内未对此委托进行操作，系统将默认完成该委托";
+        GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
         return $acceptedAssignment;
     }
@@ -219,12 +230,14 @@ class AssignmentService
         $globalConfigs = app('global_configs');
         $rate = $globalConfigs['service_fee_rate'];
 
-        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $rate) {
+        $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $rate, $assignment) {
 
             $acceptedAssignment->status = AcceptedAssignment::STATUS_FINISHED;
             $acceptedAssignment->save();
 
-            $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+
             $assignment->status = Assignment::STATUS_FINISHED;
             $assignment->save();
 
@@ -261,7 +274,9 @@ class AssignmentService
             OperationLog::STATUS_FINISHED
         );
 
-        //todo 推送
+        //推送
+        $message = "您接受的委托 $assignment->title 的已被确认完成，委托报酬已经打入您的余额";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;
     }
@@ -270,6 +285,8 @@ class AssignmentService
     {
         $acceptedAssignment->status = AcceptedAssignment::STATUS_ARBITRATED;
         $acceptedAssignment->save();
+
+        $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
 
         //日志记录 assign_user拒绝解决问题，提交申请让assign_user确认
         $this->operationLogService->log(
@@ -281,7 +298,12 @@ class AssignmentService
             OperationLog::STATUS_ARBITRATED
         );
 
-        //todo 推送给客服
+        //todo 推送给客服 客服系统还没做
+
+
+        //推送给提交完成的人
+        $message = "您提交的完成委托 $assignment->title 的请求已被拒绝，目前交由客服处理中，请联系客服或者委托人了解详情";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;
 

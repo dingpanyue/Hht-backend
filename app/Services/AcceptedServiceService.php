@@ -1,6 +1,7 @@
 <?php
 namespace App\Services;
 use App\Models\AcceptedService;
+use App\Models\User;
 
 /**
  * Created by PhpStorm.
@@ -32,6 +33,19 @@ class AcceptedServiceService
         $operations = $this->getServiceOperationLog($acceptedService);
         $acceptedService->operations = $operations;
         return $acceptedService;
+    }
+
+    //获取我作为购买人， 购买或准备购买的accpetedService
+    public function getAcceptedServicesByUser(User $user, $status = 'all')
+    {
+        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('assign_user_id', $user->id)->orderBy('status', 'asc');
+
+        if ($status != 'all') {
+            $acceptedServices = $acceptedServices->where('status', $status);
+        }
+
+        $acceptedServices = $acceptedServices->get();
+        return $acceptedServices;
     }
 
     public function getServiceOperationLog(AcceptedService $acceptedService)

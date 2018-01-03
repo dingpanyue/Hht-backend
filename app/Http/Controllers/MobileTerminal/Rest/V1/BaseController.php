@@ -44,6 +44,8 @@ class BaseController extends Controller
 
     const CODE_FAIL_TO_SAVE_IMAGE =         200200;        //图片保存出错
 
+    const CODE_ORDER_SAVE_ERROR = 200300;                 //订单生成失败
+
 
     /**
      * 获取请求所要求的版本号

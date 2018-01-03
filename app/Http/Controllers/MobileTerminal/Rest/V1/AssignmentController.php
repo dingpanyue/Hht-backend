@@ -119,7 +119,7 @@ class AssignmentController extends BaseController
             throw new Exception($e->getMessage(), $e->getCode());
         }
 
-        return self::success($assignment);
+        return self::success(AssignmentTransformer::transform($assignment));
     }
 
     //获取单个委托详情
@@ -137,7 +137,7 @@ class AssignmentController extends BaseController
         $operations = $this->assignmentService->getAssignmentOperationLog($assignment);
         $assignment->operations = $operations;
 
-        return self::success($assignment);
+        return self::success(AssignmentTransformer::transform($assignment));
     }
 
     //接受委托 assign_user
@@ -200,7 +200,7 @@ class AssignmentController extends BaseController
             $acceptedAssignment = $this->assignmentService->acceptAssignment($user->id, $assignment->id, $reward, $deadline);
         }
         //todo 这里应该找acceptedAssignment的时候把assignment的属性也找出来返回
-        return self::success($acceptedAssignment);
+        return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
     }
 
     //采纳被接受的委托 assign_user
@@ -235,36 +235,7 @@ class AssignmentController extends BaseController
             return self::notAllowed();
         } else {
             $acceptedAssignment = $this->assignmentService->adaptAcceptedAssignment($acceptedAssignment);
-            return self::success($acceptedAssignment);
-        }
-    }
-
-    //取消被接收的委托 assign_user serve_user
-    public function cancelAcceptedAssignment($id)
-    {
-        $user = $this->user;
-
-        /**
-         * @var $acceptedAssignment AcceptedAssignment
-         */
-        $acceptedAssignment = $this->acceptedAssignmentService->getAcceptedAssignmentById($id);
-
-        if (!$acceptedAssignment) {
-            return self::resourceNotFound();
-        }
-
-        if ($acceptedAssignment->status != AcceptedAssignment::STATUS_SUBMITTED && $acceptedAssignment->status != AcceptedAssignment::STATUS_ADAPTED ) {
-            return self::notAllowed();
-        }
-
-        //如果是已提交但未接受的，只能由提交人 serve_user 取消
-        if ($acceptedAssignment->status == AcceptedAssignment::STATUS_SUBMITTED && $acceptedAssignment->serve_user_id != $user->id) {
-            return self::notAllowed();
-        } elseif ($acceptedAssignment->assign_user_id != $user->id && $acceptedAssignment->serve_user_id != $user->id){
-            return self::notAllowed();
-        } else{
-            $acceptedAssignment = $this->assignmentService->cancelAcceptedAssignment($acceptedAssignment, $user->id);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
         }
     }
 
@@ -290,7 +261,7 @@ class AssignmentController extends BaseController
             return self::notAllowed();
         } else {
             $acceptedAssignment = $this->assignmentService->dealAcceptedAssignment($acceptedAssignment, $user->id);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
         }
     }
 
@@ -315,8 +286,8 @@ class AssignmentController extends BaseController
         if ($acceptedAssignment->assign_user_id != $user->id) {
             return self::notAllowed();
         } else {
-            $acceptedAssignment = $this->assignmentService->fefuseFinishingAcceptedAssignment($acceptedAssignment, $user->id);
-            return self::success($acceptedAssignment);
+            $acceptedAssignment = $this->assignmentService->refuseFinishingAcceptedAssignment($acceptedAssignment, $user->id);
+            return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
         }
 
     }
@@ -343,7 +314,7 @@ class AssignmentController extends BaseController
             return self::notAllowed('您不是该委托的发布人');
         } else {
             $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment, $user->id);
-            return self::success($acceptedAssignment);
+            return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
         }
     }
 
@@ -360,7 +331,6 @@ class AssignmentController extends BaseController
             $assignments = $this->assignmentService->getAssignmentsByUser($user);
         }
 
-        return self::success($assignments);
         return self::success(AssignmentTransformer::transformList($assignments));
     }
 
@@ -377,7 +347,7 @@ class AssignmentController extends BaseController
             $acceptedAssignments = $this->acceptedAssignmentService->getAcceptedAssignmentsByUser($user);
         }
 
-        return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments));
+        return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments, false));
     }
 
 

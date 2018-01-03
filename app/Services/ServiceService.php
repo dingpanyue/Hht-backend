@@ -3,6 +3,7 @@ namespace App\Services;
 use App\Models\AcceptedService;
 use App\Models\OperationLog;
 use App\Models\Service;
+use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -17,13 +18,11 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 class ServiceService
 {
     protected $serviceEloqument;
-
     protected $operationLogService;
 
     public function __construct(Service $service, OperationLogService $operationLogService)
     {
         $this->serviceEloqument = $service;
-
         $this->operationLogService = $operationLogService;
     }
 
@@ -32,6 +31,19 @@ class ServiceService
     {
         $service = $this->serviceEloqument->with('user')->find($serviceId);
         return $service;
+    }
+
+    //我发布的服务
+    public function getServicesByUser(User $user, $status = 'all')
+    {
+        $services = $this->serviceEloqument->with('acceptedServicesCommitted')->where('user_id', $user->id)->where('expired_at', '>', date('Y-m-d H:i:s'))->orderBy('status', 'asc');
+
+        if ($status != 'all') {
+            $services->where('status', $status);
+        }
+
+        $services = $services->get();
+        return $services;
     }
 
     //根据服务id获取服务信息  附带服务产生的acceptedService中等待处理的信息
@@ -134,6 +146,10 @@ class ServiceService
             OperationLog::STATUS_COMMITTED
         );
 
+        //推送
+        $message = "您发布的服务 $service->title 有了一个新的购买请求";
+        GatewayWorkerService::sendSystemMessage($message, $service->user_id);
+
         return $acceptedService;
     }
 
@@ -143,6 +159,8 @@ class ServiceService
 
         $acceptedService->status = AcceptedService::STATUS_UNPAID;
         $acceptedService->save();
+
+        $service = $acceptedService->service;
 
         //记录日志 -- 采纳接受的委托
         $this->operationLogService->log(
@@ -154,7 +172,10 @@ class ServiceService
             OperationLog::STATUS_UNPAID
         );
 
-        //todo 发送推送
+        //推送
+        $message = "您购买服务 $service->title 的请求已被接受，请尽快支付";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+
         return $acceptedService;
     }
 
@@ -162,6 +183,8 @@ class ServiceService
     {
         $acceptedService->status = AcceptedService::STATUS_DEALT;
         $acceptedService->save();
+
+        $service = $acceptedService->service;
 
         //记录日志 -- 采纳接受的委托
         $this->operationLogService->log(
@@ -173,7 +196,10 @@ class ServiceService
             OperationLog::STATUS_DEALT
         );
 
-        //todo 发送推送
+        //推送
+        $message = "您购买的服务 $service->title 已被提交完成，请核实后确认，如在截止时间内未对此委托进行操作，系统将默认完成该服务";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+
         return $acceptedService;
 
     }
@@ -186,7 +212,12 @@ class ServiceService
             $originStatus = OperationLog::STATUS_DEALT;
         }
 
-        $acceptedService = DB::transaction(function () use ($acceptedService, $originStatus) {
+        $globalConfigs = app('global_configs');
+        $rate = $globalConfigs['service_fee_rate'];
+
+        $service = $acceptedService->service;
+
+        $acceptedService = DB::transaction(function () use ($acceptedService, $originStatus, $rate) {
             $acceptedService->status = AcceptedService::STATUS_FINISHED;
             $acceptedService->save();
 
@@ -200,15 +231,37 @@ class ServiceService
                 OperationLog::STATUS_FINISHED
             );
 
-            //todo 把钱打到serve_user账户
+            //把报酬打到serve_user 账户          增加服务星级
+            $serveUser = $acceptedService->serveUser;
+            $serveUserInfo = $serveUser->userInfo;
+
+            //更新余额
+            $serveUserInfo->balance = $serveUserInfo->balance + $acceptedService->reward * (1 - $rate);
+            //更新积分
+            $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedService->reward;
+            $serveUserInfo->save();
+
+            //todo 增加流水记录（余额的形式）
+
+            $assignUser = $acceptedService->assignUser;
+            $assignUserInfo = $assignUser->userInfo;
+
+
+            //更新委托人积分
+            $assignUserInfo->assign_points = $assignUserInfo->assign_ponts + (int)$acceptedService->reward;
+            $assignUserInfo->save();
 
             return $acceptedService;
         });
 
-        //todo 发送推送
+        //推送
+        $message = "您提交完成的服务 $service->title 已被确认完成，服务报酬已经打入您的余额";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+
         return $acceptedService;
     }
 
+    //todo 拒绝完成
 
 
 }

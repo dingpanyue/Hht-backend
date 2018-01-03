@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Models\UserInfo;
+use App\Services\GatewayWorkerService;
 use App\Traits\VerifyCardNo;
 use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
@@ -73,14 +74,8 @@ class UserController extends BaseController
     {
         $fromUserId = $this->user->id;
         $message = $request->get('message');
-        $data = [
-            'type' => 'chat',
-            'from_user_id' => $fromUserId,
-            'from_user_name' => $this->user->name,
-            'time' => date('Y-m-d H:i:s'),
-            'message' => $message
-        ];
-        Gateway::sendToUid($toUserId, json_encode($data));
+        GatewayWorkerService::sendMessageFromUser($message, $fromUserId, $toUserId);
+        return self::success();
     }
 
     public function upload(Request $request)

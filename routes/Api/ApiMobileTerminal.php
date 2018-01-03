@@ -71,12 +71,20 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/assignments', ['as' => '', 'uses' => 'AssignmentController@myAssignments']);
         //用户作为服务者接受的所有委托
         Route::get('/accepted_assignments', ['as' => '', 'uses' => 'AssignmentController@myAcceptedAssignments']);
+        //获取我发布的服务
+        Route::get('/services', ['as' => '', 'uses' => 'ServiceController@myServices']);
+        //获取作为委托人购买的所有服务
+        Route::get('/accepted_services', ['as' => '', 'uses' => 'ServiceController@myAcceptedServices']);
+
+
     });
 
     //支付接口
     Route::group(['prefix' => 'pay'], function () {
-        //绑定clientId 和 userId
-        Route::get('/pay', ['as' => 'Bind', 'uses' => 'PayController@pay']);
+        //支付接口
+        Route::get('/pay', ['as' => 'Pay', 'uses' => 'PayController@pay']);
+        //提现接口
+        Route::get('/withdrawals', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
     });
 
 

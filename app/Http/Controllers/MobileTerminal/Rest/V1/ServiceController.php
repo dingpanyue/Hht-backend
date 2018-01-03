@@ -10,6 +10,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 use App\Models\AcceptedService;
 use App\Models\Service;
 use App\Services\AcceptedServiceService;
+use App\Services\GatewayWorkerService;
 use App\Services\ServiceService;
 use App\Transformers\AcceptedServiceTransformer;
 use App\Transformers\ServiceTransformer;
@@ -59,6 +60,36 @@ class ServiceController extends BaseController
     {
         $acceptedService = $this->acceptedServiceService->getAcceptedServiceDetailById($id);
         return self::success(AcceptedServiceTransformer::transform($acceptedService));
+    }
+
+    //获取我发布的服务列表
+    public function myServices(Request $request)
+    {
+        $user = $this->user;
+        $inputs = $request->all();
+
+        if (isset($inputs['status'])) {
+            $services = $this->serviceService->getServicesByUser($user, $inputs['status']);
+        } else {
+            $services = $this->serviceService->getServicesByUser($user);
+        }
+
+        return self::success(ServiceTransformer::transformList($services));
+    }
+
+    //获取我作为委托人 购买或准备购买的服务 acceptedServices
+    public function myAcceptedServices(Request $request)
+    {
+        $user = $this->user;
+        $inputs = $request->all();
+
+        if (isset($inputs['status'])) {
+            $acceptedServices = $this->acceptedServiceService->getAcceptedServicesByUser($user, $inputs['status']);
+        } else {
+            $acceptedServices = $this->acceptedServiceService->getAcceptedServicesByUser($user);
+        }
+
+        return self::success(AcceptedServiceTransformer::transformList($acceptedServices, false));
     }
 
     //发布服务 服务没有deadline 由购买服务的人来决定（因为service好比队列任务，自己不应该决定什么时候完成，也就说会有单个服务很快能完成，但手头大量积压的情况）   reward根据情况可填也可不填

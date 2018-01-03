@@ -27,14 +27,13 @@ class ServiceTransformer
 
         if($includeAcceptedServices) {
             if ($service->acceptedServices) {
-                $service->accepted_services = AcceptedServiceTransformer::transformList($service->acceptedServices);
+                $service->accepted_services = AcceptedServiceTransformer::transformList($service->acceptedServices, false);
             }
 
             if ($service->acceptedServicesCommitted) {
-                $service->accepted_services_committed = AcceptedServiceTransformer::transformList($service->acceptedServicesCommitted);
+                $service->accepted_services_committed = AcceptedServiceTransformer::transformList($service->acceptedServicesCommitted, false);
             }
         }
-
         return $service;
     }
 

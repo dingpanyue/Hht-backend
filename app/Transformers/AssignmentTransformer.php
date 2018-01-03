@@ -30,6 +30,9 @@ class AssignmentTransformer
             $assignment->accepted_assignments = AcceptedAssignmentTransformer::transformList($assignment->acceptedAssignments, false);
         }
 
+        if ($assignment->operations) {
+            $assignment->operations = OperationLogTransformer::transformList($assignment->operations);
+        }
         return $assignment;
     }
 
