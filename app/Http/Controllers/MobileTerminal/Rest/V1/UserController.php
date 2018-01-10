@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
+use App\Models\Message;
+use App\Models\User;
 use App\Models\UserInfo;
 use App\Services\GatewayWorkerService;
 use App\Traits\VerifyCardNo;
 use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
@@ -78,6 +81,55 @@ class UserController extends BaseController
         return self::success();
     }
 
+    //获取用户
+    public function info()
+    {
+        //获取用户
+        $user = $this->user;
+        $userInfo = $user->userInfo;
+        $user->user_info = $userInfo;
+
+        //获取余额
+        $balance = $userInfo->balance;
+        $user->balance = $balance;
+
+        //所有未读消息 数量
+        $Messages = Message::select('from_user_id', DB::raw('count(*) as total'))
+            ->where('to_user_id', $user->id)
+            ->where('status', '!=', Message::STATUS_SEEN )
+            ->with('fromUser')
+            ->groupBy('from_user_id')
+            ->get();
+
+        $user->messages = $Messages;
+
+        return self::success($user);
+    }
+
+    //获取和其他某用的聊天记录
+    public function getMessages($id)
+    {
+        $user = $this->user;
+
+        if ($user->id == $id) {
+            return self::parametersIllegal('您自己无法和自己聊天');
+        }
+
+        $userMessages = Message::where(function ($query) use ($user, $id) {
+            $query->where(function ($query) use ($user, $id) {
+                $query->where('from_user_id', $user->id)->where('to_user_id', $id);
+            })->orWhere(function ($query) use ($user, $id) {
+                $query->where('from_user_id', $id)->where('to_user_id', $user->id);
+            });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate();
+
+        return self::success($userMessages);
+
+
+    }
+
     public function upload(Request $request)
     {
         $all = $request->all();
@@ -88,9 +140,11 @@ class UserController extends BaseController
             'upFile.required' => '请选择要上传的文件'
         ];
         $validator = Validator::make($all, $rules, $messages);
+
         if ($validator->fails()) {
             return self::parametersIllegal($validator->messages()->first());
         }
+
         //获取上传文件的大小
         $size = $request->file('upFile')->getSize();
         //这里可根据配置文件的设置，做得更灵活一点

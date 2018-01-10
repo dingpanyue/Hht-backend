@@ -12,6 +12,7 @@ use App\Models\AcceptedService;
 use App\Models\Assignment;
 use App\Models\OperationLog;
 use App\Models\Order;
+use App\Models\TimedTask;
 use App\Models\User;
 use App\Services\AcceptedServiceService;
 use App\Services\AssignmentService;
@@ -241,6 +242,14 @@ class PayController extends BaseController
                         $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($order->primary_key);
                         $acceptedService->status = AcceptedService::STATUS_ADAPTED;
                         $acceptedService->save();
+
+                        //添加定时任务，检查服务过期
+                        $timedTask = new TimedTask();
+                        $timedTask->name = "接受的服务 $acceptedService->id 达到deadline";
+                        $timedTask->command = "outDate serve $acceptedService->id";
+                        $timedTask->start_time = $acceptedService->deadline;
+                        $timedTask->result = 0;
+                        $timedTask->save();
 
                         $this->operationLogService->log(
                             OperationLog::OPERATION_PAY,

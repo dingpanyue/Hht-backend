@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "91014f93c3422f41563b0b0d3a276831",
+    "content-hash": "e33d4bc8fbc6d8cbc24bab6a72fee01d",
     "packages": [
         {
             "name": "defuse/php-encryption",
@@ -259,6 +259,41 @@
             "description": "A simple library to encode and decode JSON Web Tokens (JWT) in PHP. Should conform to the current spec.",
             "homepage": "https://github.com/firebase/php-jwt",
             "time": "2017-06-27T22:17:23+00:00"
+        },
+        {
+            "name": "flc/dysms",
+            "version": "v1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/flc1125/dysms.git",
+                "reference": "a60645c6b35a15fe7fed6282784d2094368fc8f5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://files.phpcomposer.com/files/flc1125/dysms/a60645c6b35a15fe7fed6282784d2094368fc8f5.zip",
+                "reference": "a60645c6b35a15fe7fed6282784d2094368fc8f5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Flc\\Dysms\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "阿里短信-适用Laravel、Yii、Thinkphp等任何PHP项目...",
+            "keywords": [
+                "dysms",
+                "flc",
+                "阿里短信"
+            ],
+            "time": "2017-08-12T03:35:57+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

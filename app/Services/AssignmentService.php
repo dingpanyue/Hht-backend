@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\OperationLog;
+use App\Models\TimedTask;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\EncryptException;
 use Illuminate\Support\Facades\DB;
@@ -172,6 +173,14 @@ class AssignmentService
             $assignment->status = Assignment::STATUS_ADAPTED;
             $assignment->adapted_assignment_id = $acceptedAssignment->id;
             $assignment->save();
+
+            //添加定时任务， 检测 deadline
+            $timedTask = new TimedTask();
+            $timedTask->name = "接受的委托$acceptedAssignment->id 达到deadline";
+            $timedTask->command = "outDate assign $acceptedAssignment->id";
+            $timedTask->start_time = $acceptedAssignment->deadline;
+            $timedTask->result = 0;
+            $timedTask->save();
 
             return $acceptedAssignment;
         });

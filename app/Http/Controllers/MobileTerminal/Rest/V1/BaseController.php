@@ -46,6 +46,8 @@ class BaseController extends Controller
 
     const CODE_ORDER_SAVE_ERROR = 200300;                 //订单生成失败
 
+    const CODE_SMS_SERVICE_ABNORMAL = 200400;                 //短信服务异常
+
 
     /**
      * 获取请求所要求的版本号

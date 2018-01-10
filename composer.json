@@ -6,12 +6,13 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "flc/dysms": "^1.0",
         "laravel/framework": "5.4.*",
         "laravel/passport": "^4.0",
         "laravel/tinker": "~1.0",
+        "lyt8384/pingpp-laravel5-plus": "dev-master",
         "workerman/gateway-worker": "^3.0",
-        "yansongda/laravel-pay": "^1.0",
-        "lyt8384/pingpp-laravel5-plus": "dev-master"
+        "yansongda/laravel-pay": "^1.0"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

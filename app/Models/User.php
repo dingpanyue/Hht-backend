@@ -36,4 +36,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserInfo::class, 'user_id');
     }
+
+    public function balance()
+    {
+
+    }
 }

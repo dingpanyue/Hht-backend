@@ -14,6 +14,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     //注册
     Route::post('/register', 'RegisterController@register');
+    //检测电话号码有没有注册过
+    Route::post('/check-mobile','RegisterController@checkMobile');
+    //发送验证码
+    Route::post('/send-sms', 'RegisterController@sendSmsCode');
     //登录
     Route::post('/login', 'LoginController@login');
 
@@ -67,6 +71,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/authentication', ['as' => '', 'uses' => 'UserController@authentication']);
         //上传头像
         Route::post('/upload', ['as' => '', 'uses' => 'UserController@upload']);
+        //获取用户信息
+        Route::get('/info', ['as' => '', 'uses' => 'UserController@info']);
+        //获取与某用户的所有聊天记录
+        Route::get('/{user_id}/messages', ['as' => '', 'uses' => 'UserController@getMessages']);
         //用户的发布所有委托
         Route::get('/assignments', ['as' => '', 'uses' => 'AssignmentController@myAssignments']);
         //用户作为服务者接受的所有委托
@@ -75,6 +83,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/services', ['as' => '', 'uses' => 'ServiceController@myServices']);
         //获取作为委托人购买的所有服务
         Route::get('/accepted_services', ['as' => '', 'uses' => 'ServiceController@myAcceptedServices']);
+
 
 
     });
