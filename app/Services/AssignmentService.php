@@ -268,7 +268,7 @@ class AssignmentService
             $this->flowLogService->log(
                 $acceptedAssignment->serve_user_id,
                 'orders',
-                $order->method,
+                Order::BALANCE,
                 $order->id,
                 -$order->fee
             );

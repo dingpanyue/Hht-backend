@@ -592,6 +592,5 @@ class PayController extends BaseController
             "user_fee" => 50]);
 
         return $withdrawals;
-
     }
 }

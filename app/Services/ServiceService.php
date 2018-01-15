@@ -2,6 +2,7 @@
 namespace App\Services;
 use App\Models\AcceptedService;
 use App\Models\OperationLog;
+use App\Models\Order;
 use App\Models\Service;
 use App\Models\User;
 use Exception;
@@ -215,9 +216,11 @@ class ServiceService
         $globalConfigs = app('global_configs');
         $rate = $globalConfigs['service_fee_rate'];
 
+        $order = Order::where('type', 'service')->where('primary_key', $acceptedService->id)->where('status', 'succeed')->first();
+
         $service = $acceptedService->service;
 
-        $acceptedService = DB::transaction(function () use ($acceptedService, $originStatus, $rate) {
+        $acceptedService = DB::transaction(function () use ($acceptedService, $originStatus, $rate, $order) {
             $acceptedService->status = AcceptedService::STATUS_FINISHED;
             $acceptedService->save();
 
@@ -242,6 +245,13 @@ class ServiceService
             $serveUserInfo->save();
 
             //todo 增加流水记录（余额的形式）
+            $this->flowLogService->log(
+                $acceptedService->assign_user_id,
+                'orders',
+                Order::BALANCE,
+                $order->id,
+                -$order->fee
+            );
 
             $assignUser = $acceptedService->assignUser;
             $assignUserInfo = $assignUser->userInfo;

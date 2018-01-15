@@ -213,7 +213,7 @@ class OutDate extends Command
                     $this->flowLogService->log(
                         $acceptedAssignment->serve_user_id,
                         'orders',
-                        $order->method,
+                        Order::BALANCE,
                         $order->id,
                         -$order->fee
                     );
@@ -385,11 +385,10 @@ class OutDate extends Command
                     $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedService->reward;
                     $serveUserInfo->save();
 
-                    //todo 增加流水记录（余额的形式）
                     $this->flowLogService->log(
                         $acceptedService->assign_user_id,
                         'orders',
-                        $order->method,
+                        Order::BALANCE,
                         $order->id,
                         -$order->fee
                     );
