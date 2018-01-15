@@ -45,8 +45,15 @@ class BaseController extends Controller
     const CODE_FAIL_TO_SAVE_IMAGE =         200200;        //图片保存出错
 
     const CODE_ORDER_SAVE_ERROR = 200300;                 //订单生成失败
+    const CODE_ORDER_STATUS_ABNORMAL = 200301;
 
     const CODE_SMS_SERVICE_ABNORMAL = 200400;                 //短信服务异常
+
+    const CODE_FAIL_TO_CREATE_ADDRESS = 200500;                   //创建地址失败
+
+    const CODE_BALANCE_NOTE_ENOUGH = 206000;                    //账户余额不足
+
+
 
 
     /**

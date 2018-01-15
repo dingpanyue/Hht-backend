@@ -256,7 +256,7 @@ class ServiceService
 
         //推送
         $message = "您提交完成的服务 $service->title 已被确认完成，服务报酬已经打入您的余额";
-        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
 
         return $acceptedService;
     }

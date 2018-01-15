@@ -20,7 +20,8 @@ class AssignmentTransformer
             Assignment::STATUS_ADAPTED => '已采纳',
             Assignment::STATUS_CANCELED => '已取消',
             Assignment::STATUS_FINISHED => '已完成',
-            Assignment::STATUS_FAILED => '委托失败'
+            Assignment::STATUS_FAILED => '委托失败',
+            Assignment::STATUS_REFUNDING => '退款中'
         ];
 
         $assignment->classification = $classifications[$assignment->classification];

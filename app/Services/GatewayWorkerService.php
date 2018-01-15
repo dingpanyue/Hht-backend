@@ -53,7 +53,7 @@ class GatewayWorkerService
     protected static function send($userId, $data)
     {
         if(Gateway::isUidOnline($userId)) {
-            Gateway::sendToUid($userId, json_encode($data));
+            Gateway::sendToUid($userId, json_encode($data,JSON_UNESCAPED_UNICODE));
             self::save($data, Message::STATUS_SENT);
         } else {
             self::save($data);

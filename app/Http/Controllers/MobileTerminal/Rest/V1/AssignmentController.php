@@ -14,6 +14,9 @@ use Exception;
 use function foo\func;
 use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Created by PhpStorm.
@@ -199,7 +202,6 @@ class AssignmentController extends BaseController
 
             $acceptedAssignment = $this->assignmentService->acceptAssignment($user->id, $assignment->id, $reward, $deadline);
         }
-        //todo 这里应该找acceptedAssignment的时候把assignment的属性也找出来返回
         return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
     }
 
@@ -350,5 +352,81 @@ class AssignmentController extends BaseController
         return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments, false));
     }
 
+    //上传图片
+    public function upload($id, Request $request)
+    {
+        $user = $this->user;
 
+        $assignment = $this->assignmentService->getAssignmentById($id);
+
+        if(!$assignment) {
+            return self::resourceNotFound();
+        }
+
+        if($assignment->status != Assignment::STATUS_UNPAID && $assignment->status != Assignment::STATUS_WAIT_ACCEPT) {
+            return self::notAllowed();
+        }
+
+        if (!$assignment->user_id == $user->id) {
+            return self::notAllowed();
+        }
+
+        $inputs = $request->all();
+        $imageArray = [];
+
+        /**
+         * @var $image UploadedFile
+         */
+        foreach ($inputs as $image) {
+
+            $size = $image->getSize();
+            //这里可根据配置文件的设置，做得更灵活一点
+            if ($size > 2 * 1024 * 1024) {
+                return self::parametersIllegal('上传文件不能超过2M');
+            }
+            //文件类型
+            $mimeType = $image->getMimeType();
+
+            //这里根据自己的需求进行修改
+            if ($mimeType != 'image/png' && $mimeType != 'image/jpeg') {
+                return self::parametersIllegal('只能上传png格式的图片');
+            }
+            //扩展文件名
+            $ext = $image->getClientOriginalExtension();
+            //判断文件是否是通过HTTP POST上传的
+            $realPath = $image->getRealPath();
+
+            if (!$realPath) {
+                return self::notAllowed('非法操作');
+            }
+
+            //创建以当前日期命名的文件夹
+            $today = date('Y-m-d');
+            //storage_path().'/app/uploads/' 这里根据 /config/filesystems.php 文件里面的配置而定
+            //$dir = str_replace('\\','/',storage_path().'/app/uploads/'.$today);
+            $dir = storage_path() . '/app/public/images/assignments/' . $today;
+            if (!is_dir($dir)) {
+                mkdir($dir);
+            }
+
+            //上传文件
+            $filename = uniqid() . '.' . $ext;//新文件名
+            if (Storage::disk('public')->put('/images/assignments/' . $today . '/' . $filename, file_get_contents($realPath))) {
+
+                $user = $this->user;
+
+                $user->image = "/storage/images/assignments/$today/$filename";
+                $user->save();
+
+                $imageArray[] = URL::asset($user->image);
+            } else {
+                return self::error(self::CODE_FAIL_TO_SAVE_IMAGE, "图片保存出错");
+            }
+        }
+
+        $assignment->images = json_encode($imageArray);
+        $assignment->save();
+
+        return self::success($imageArray);
+    }
 }

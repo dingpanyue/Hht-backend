@@ -22,8 +22,8 @@ class CreateTableTimedTasks extends Migration
             $table->timestamp('last_time')->nullable()->comment('上次执行时间');
             $table->string('note')->nullable()->comment('备注');
             $table->string('last_log')->nullable()->comment('执行日志');
-            $table->timestamp('start_time')->nullable()->default(null)->comment('开始时间');
-            $table->timestamp('end_time')->nullable()->default(null)->comment('结束时间');
+            $table->timestamp('start_time')->nullable()->comment('开始时间');
+            $table->timestamp('end_time')->nullable()->comment('结束时间');
             $table->integer('key')->nullable()->comment('');
             $table->timestamps();
         });

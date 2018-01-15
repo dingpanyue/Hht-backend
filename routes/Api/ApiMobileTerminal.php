@@ -31,6 +31,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
         //发布委托
         Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publishAssignment']);
+        //上传委托图片
+        Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'AssignmentController@upload']);
         //接受委托
         Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@acceptAssignment']);
         //采纳 接受的委托
@@ -39,6 +41,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/deal/{id}', ['as' => '', 'uses' => 'AssignmentController@dealAcceptedAssignment']);
         //确认完成  委托
         Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
+
     });
 
     //服务接口
@@ -51,6 +54,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/accepted_services/{id}/detail', ['as' => '', 'uses' => 'ServiceController@acceptedServiceDetail']);
         //发布服务
         Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publishService']);
+        //上传服务图片
+        Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'ServiceController@upload']);
         //购买服务 post参数为reward 和 deadline
         Route::post('/buy/{id}', ['as' => '', 'uses' => 'ServiceController@buyService']);
         //同意 购买者  购买服务
@@ -69,10 +74,16 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/send/{user_id}', ['as' => 'Send', 'uses' => 'UserController@sendMessage']);
         //提交认证信息
         Route::post('/authentication', ['as' => '', 'uses' => 'UserController@authentication']);
+        //添加地址
+        Route::post('/address', ['as' => '', 'uses' => 'UserController@addAddress']);
+        //设置地址为默认地址
+        Route::post('/{id}/set-default', ['as' => '', 'uses' => 'UserController@setDefaultAddress']);
+        //获取用户地址列表
+        Route::get('/addresses', ['as' => '', 'uses' => 'UserController@getUserAddresses']);
         //上传头像
         Route::post('/upload', ['as' => '', 'uses' => 'UserController@upload']);
         //获取用户信息
-        Route::get('/info', ['as' => '', 'uses' => 'UserController@info']);
+        Route::get('{id}/info', ['as' => '', 'uses' => 'UserController@info']);
         //获取与某用户的所有聊天记录
         Route::get('/{user_id}/messages', ['as' => '', 'uses' => 'UserController@getMessages']);
         //用户的发布所有委托
@@ -83,17 +94,17 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/services', ['as' => '', 'uses' => 'ServiceController@myServices']);
         //获取作为委托人购买的所有服务
         Route::get('/accepted_services', ['as' => '', 'uses' => 'ServiceController@myAcceptedServices']);
-
-
-
     });
 
     //支付接口
-    Route::group(['prefix' => 'pay'], function () {
+    Route::group(['prefix' => 'pay', 'middleware' => 'auth:api'], function () {
         //支付接口
         Route::get('/pay', ['as' => 'Pay', 'uses' => 'PayController@pay']);
+        //退款接口
+        Route::get('/refund/{type}/{pk}', ['as' => '', 'uses' => 'PayController@refund']);
         //提现接口
         Route::get('/withdrawals', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
+
     });
 
 

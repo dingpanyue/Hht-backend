@@ -20,6 +20,7 @@ class CreateTableAssignments extends Migration
             $table->string('title')->index()->comment('标题/概要');
             $table->integer('classification')->index()->comment('委托分类');
             $table->text('introduction')->nullable()->comment('详细介绍');
+            $table->text('images')->nullable()->comment('图片');
             $table->integer('province_id')->index();
             $table->integer('city_id')->index();
             $table->integer('area_id')->index();

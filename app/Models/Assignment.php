@@ -40,6 +40,7 @@ class Assignment extends Model
     const STATUS_CANCELED = 3;               //委托被发布人取消
     const STATUS_FINISHED = 4;                //委托完成
     const STATUS_FAILED = 5;                 //委托失败
+    const STATUS_REFUNDING = 6;               //退款中
 
     public $fillable = [
         'title',

@@ -31,9 +31,11 @@ class Order extends Model
     const ALIPAY = 'alipay';
     const WX= 'wx';
     const UPACP = 'upacp';
+    const BALANCE = 'balance';
 
     const STATUS_PREPARING = 'preparing';
     const STATUS_SUCCEED = 'succeed';
+    const STATUS_REFUNDED = 'refunded';
 
 
 }

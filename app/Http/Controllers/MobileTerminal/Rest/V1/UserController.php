@@ -4,7 +4,9 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Models\UserAddress;
 use App\Models\UserInfo;
+use App\Services\AddressService;
 use App\Services\GatewayWorkerService;
 use App\Traits\VerifyCardNo;
 use GatewayWorker\Lib\Gateway;
@@ -17,6 +19,14 @@ use Illuminate\Support\Facades\Validator;
 class UserController extends BaseController
 {
     use VerifyCardNo;
+
+    protected $addressService;
+
+    public function __construct(AddressService $addressService)
+    {
+        $this->addressService = $addressService;
+        parent::__construct();
+    }
 
     public function authentication(Request $request)
     {
@@ -41,7 +51,7 @@ class UserController extends BaseController
 
         $userInfo = $user->userInfo;
 
-        if (!$userInfo) {
+            if (!$userInfo) {
             $userInfo = new UserInfo();
         } else {
             if ($userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
@@ -57,6 +67,7 @@ class UserController extends BaseController
         $userInfo->save();
 
         //todo 调用认证接口对用户进行认证 改变状态
+
 
 
         return self::success($user);
@@ -82,26 +93,39 @@ class UserController extends BaseController
     }
 
     //获取用户
-    public function info()
+    public function info($id)
     {
         //获取用户
-        $user = $this->user;
+        $visitUser = $this->user;
+
+        if ($id == $visitUser->id) {
+            $user = $visitUser;
+        } else {
+            $user = User::find($id);
+        }
+
         $userInfo = $user->userInfo;
+        if (!$userInfo) {
+            $userInfo = null;
+        }
+
         $user->user_info = $userInfo;
 
-        //获取余额
-        $balance = $userInfo->balance;
-        $user->balance = $balance;
+        if ($id == $visitUser->id) {
+            //获取余额
+            $balance = $userInfo->balance;
+            $user->balance = $balance;
 
-        //所有未读消息 数量
-        $Messages = Message::select('from_user_id', DB::raw('count(*) as total'))
-            ->where('to_user_id', $user->id)
-            ->where('status', '!=', Message::STATUS_SEEN )
-            ->with('fromUser')
-            ->groupBy('from_user_id')
-            ->get();
+            //所有未读消息 数量
+            $Messages = Message::select('from_user_id', DB::raw('count(*) as total'))
+                ->where('to_user_id', $user->id)
+                ->where('status', '!=', Message::STATUS_SEEN)
+                ->with('fromUser')
+                ->groupBy('from_user_id')
+                ->get();
 
-        $user->messages = $Messages;
+            $user->messages = $Messages;
+        }
 
         return self::success($user);
     }
@@ -125,9 +149,84 @@ class UserController extends BaseController
             ->orderBy('created_at', 'desc')
             ->paginate();
 
+        Message::where('from_user_id', $id)->where('to_user_id', $user->id)->update(
+            ['status' => Message::STATUS_SEEN]
+        );
+
         return self::success($userMessages);
+    }
 
+    //用户添加地址
+    public function addAddress(Request $request)
+    {
+        $user = $this->user;
 
+        $input = $request->only('province_id', 'city_id', 'area_id', 'detail_address', 'mobile', 'receiver', 'postcode');
+        $rules = [
+            'province_id' => 'required|integer',
+            'city_id' => 'required|integer',
+            'area_id' => 'required|integer',
+            'detail_address' => 'required',
+            'receiver' => 'required',
+            'mobile' => 'required|regex:/^1[34578][0-9]{9}$/'
+        ];
+        $messages = [
+            'province_id.required' => '请选择省份',
+            'province_id.integer' => '省份格式不正确',
+            'city_id.required' => '请选择城市',
+            'city_id.integer' => '城市格式不正确',
+            'area_id.required' => '请选择地区',
+            'area_id.integer' => '地区格式不正确',
+            'detail_address.required' => '请填写详细地址',
+            'receiver.required' => '请填写收货人',
+            'mobile.required' => '请填写收货人电话号码',
+            'mobile.regex' => '电话号码格式不正确'
+        ];
+
+        $validator = Validator::make($input, $rules, $messages);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        $address = $this->addressService->create($user->id, $input);
+        $address->address = $this->addressService->getAddress($address);
+
+        if ($address) {
+            return self::success($address);
+        } else {
+            return self::error(self::CODE_FAIL_TO_CREATE_ADDRESS, '创建地址失败');
+        }
+    }
+
+    //获取用户地址列表
+    public function getUserAddresses()
+    {
+        $user = $this->user;
+
+        $userAddress = new UserAddress();
+        $addresses = $userAddress->where('user_id', $user->id)->get();
+
+        foreach ($addresses as $k => $address) {
+            $addresses[$k]->address = $this->addressService->getAddress($address);
+        }
+
+        return self::success($addresses);
+    }
+
+    public function setDefaultAddress($id)
+    {
+        $user = $this->user;
+
+        $userAddress = new UserAddress();
+        $address = $userAddress->find($id);
+        if ($address->user_id != $user->id) {
+            return self::notAllowed('该收货地址不属于您');
+        } else {
+            $userAddress->where('user_id', $user->id)->update(['is_default' => 0]);
+            $userAddress->where('id', $id)->update(['is_default' => 1]);
+            return self::success();
+        }
     }
 
     public function upload(Request $request)
@@ -153,8 +252,9 @@ class UserController extends BaseController
         }
         //文件类型
         $mimeType = $request->file('upFile')->getMimeType();
+
         //这里根据自己的需求进行修改
-        if ($mimeType != 'image/png') {
+        if ($mimeType != 'image/png' && $mimeType != 'image/jpeg') {
             return self::parametersIllegal('只能上传png格式的图片');
         }
         //扩展文件名

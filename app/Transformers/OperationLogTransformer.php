@@ -22,6 +22,7 @@ class OperationLogTransformer
         OperationLog::OPERATION_DEAL => '提交完成',
         OperationLog::OPERATION_FINISH => '确认完成',
         OperationLog::OPERATION_REFUSE_FINISH => '拒绝完成',
+        OperationLog::OPERATION_REFUND => '退款'
     ];
 
     public static $statuses = [
@@ -35,6 +36,7 @@ class OperationLogTransformer
         OperationLog::STATUS_FINISHED => '确认完成',
         OperationLog::STATUS_FAILED => '委托失败',
         OperationLog::STATUS_ARBITRATED => '仲裁中',
+        OperationLog::STATUS_REFUNDING => '退款中',
         '' => '-'
     ];
 

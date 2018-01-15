@@ -14,9 +14,11 @@ use App\Models\OperationLog;
 use App\Models\Order;
 use App\Models\TimedTask;
 use App\Models\User;
+use App\Models\UserInfo;
 use App\Services\AcceptedServiceService;
 use App\Services\AssignmentService;
 use App\Services\FlowLogService;
+use App\Services\GatewayWorkerService;
 use App\Services\OperationLogService;
 use App\Services\OrderService;
 use App\Services\ServiceService;
@@ -72,12 +74,14 @@ class PayController extends BaseController
      */
     public function pay(Request $request)
     {
+        $user = $this->user;
+
         $input = $request->only('type', 'method', 'pk');
 
-        $validator =  $validator = app('validator')->make($input, [
+        $validator = $validator = app('validator')->make($input, [
             'type' => 'required',
             'method' => 'required',
-            'pk'=> 'required'
+            'pk' => 'required'
         ], [
             'type.required' => '订单类型必须填写',
             'method.required' => '请选择支付方式',
@@ -92,11 +96,9 @@ class PayController extends BaseController
         $type = $input['type'];
         $pk = $input['pk'];
 
-        $this->user = User::find(1);
-
         $globalConfigs = app('global_configs');
 
-        if (!in_array($method, [Order::ALIPAY, Order::WX, Order::UPACP])) {
+        if (!in_array($method, [Order::ALIPAY, Order::WX, Order::UPACP, Order::BALANCE])) {
             return self::parametersIllegal();
         }
 
@@ -161,26 +163,117 @@ class PayController extends BaseController
             $order->status = Order::STATUS_PREPARING;
         }
 
-        \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
-        $charge = \Pingpp\Charge::create(array(
-            'order_no' => $order->out_trade_no,
-            'amount' => $order->fee,
-            'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
-            'channel' => $method,
-            'currency' => 'cny',
-            'client_ip' => '127.0.0.1',
-            'subject' => 'Your Subject',
-            'body' => 'Your Body',
-        ));
+        //判断余额支付 如果够  则 直接处理订单
+        if ($method == Order::BALANCE) {
+            $originBalance = $user->userInfo->balance;
+            if ($originBalance >= $order->fee) {
 
-        if ($charge) {
-            $order->charge_id = $charge->id;
-        }
+                $balance = $originBalance - $order->fee;
+                $totalAmount = $order->fee;
+                DB::transaction(function () use ($order, $method, $totalAmount, $user) {
+                    //改变订单状态
+                    $order->status = Order::STATUS_SUCCEED;
+                    $order->save();
 
-        if ($order->save()) {
-            return self::success($charge);
+                    if ($order->type == Order::TYPE_ASSIGNMENT) {
+                        /**
+                         * @var $assignment Assignment
+                         */
+                        //改变委托状态
+                        $assignment = $this->assignmentService->getAssignmentById($order->primary_key);
+                        $assignment->status = Assignment::STATUS_WAIT_ACCEPT;
+                        $assignment->save();
+
+                        //记录委托操作日志
+                        $this->operationLogService->log(
+                            OperationLog::OPERATION_PAY,
+                            OperationLog::TABLE_ASSIGNMENTS,
+                            $assignment->id,
+                            $assignment->user_id,
+                            OperationLog::STATUS_UNPAID,
+                            OperationLog::STATUS_WAIT_ACCEPT
+                        );
+
+                        //记录流水日志
+                        $this->flowLogService->log(
+                            $assignment->user_id,
+                            'orders',
+                            $method,
+                            $order->id,
+                            $totalAmount
+                        );
+                    } else {
+                        /**
+                         * @var $acceptedService AcceptedService
+                         */
+                        $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($order->primary_key);
+                        $acceptedService->status = AcceptedService::STATUS_ADAPTED;
+                        $acceptedService->save();
+
+                        //添加定时任务，检查服务过期
+                        $timedTask = new TimedTask();
+                        $timedTask->name = "接受的服务 $acceptedService->id 达到deadline";
+                        $timedTask->command = "outDate serve $acceptedService->id";
+                        $timedTask->start_time = $acceptedService->deadline;
+                        $timedTask->result = 0;
+                        $timedTask->save();
+
+                        $this->operationLogService->log(
+                            OperationLog::OPERATION_PAY,
+                            OperationLog::TABLE_ACCEPTED_SERVICES,
+                            $acceptedService->id,
+                            $acceptedService->assign_user_id,
+                            OperationLog::STATUS_UNPAID,
+                            OperationLog::STATUS_ADAPTED
+                        );
+
+                        //记录流水日志
+                        $this->flowLogService->log(
+                            $acceptedService->assign_user_id,
+                            'orders',
+                            $method,
+                            $order->id,
+                            $totalAmount
+                        );
+                    }
+
+                    //更新帐户余额
+                    $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
+                    $originBalance = $balance[0];
+                    if ($originBalance > $order->fee) {
+                        $balance = $originBalance - $order->fee;
+                        UserInfo::where('user_id', $user->id)->update(['balance' => $balance]);
+                    } else {
+                        throw new \Exception();
+                    }
+                });
+                return self::success($order);
+            } else {
+                return self::error(self::CODE_BALANCE_NOTE_ENOUGH, "账户余额不足，请选择其他支付方式");
+            }
         } else {
-            return self::error(self::CODE_ORDER_SAVE_ERROR, '订单信息保存失败');
+
+            \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
+            $charge = \Pingpp\Charge::create(array(
+                'order_no' => $order->out_trade_no,
+                'amount' => $order->fee,
+                'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
+                'channel' => $method,
+                'currency' => 'cny',
+                'client_ip' => '127.0.0.1',
+                'subject' => 'Your Subject',
+                'body' => 'Your Body',
+            ));
+
+            if ($charge) {
+                $order->charge_id = $charge->id;
+            }
+
+            if ($order->save()) {
+                return self::success($charge);
+            } else {
+                return self::error(self::CODE_ORDER_SAVE_ERROR, '订单信息保存失败');
+            }
         }
     }
 
@@ -274,12 +367,162 @@ class PayController extends BaseController
             case "refund.succeeded":
                 // 开发者在此处加入对退款异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
+
+                $data = $event->data;
+                $refund_id = $data->id;
+
+                /**
+                 * @var $order Order
+                 */
+                if ($data->succeed == true) {
+                    $order = Order::where('refund_id', $refund_id)->first();
+
+                    if ($order->type == Order::TYPE_ASSIGNMENT) {
+                        /**
+                         * @var $assignment Assignment
+                         */
+                        $assignment = Assignment::where('id', $order->primary_key)->get();
+
+                        if ($assignment->status == Assignment::STATUS_REFUNDING) {
+                            DB::transaction(function () use ($order, $assignment) {
+                                $order->status = Order::STATUS_REFUNDED;
+                                $order->save();
+
+                                $assignment->status = Assignment::STATUS_CANCELED;
+                                $assignment->save();
+
+                                //添加操作日志
+                                $this->operationLogService->log(
+                                    OperationLog::OPERATION_REFUND,
+                                    OperationLog::TABLE_ASSIGNMENTS,
+                                    $assignment->id,
+                                    $assignment->user_id,
+                                    OperationLog::STATUS_REFUNDING,
+                                    OperationLog::STATUS_CANCELED
+                                );
+
+                                //流水日志 负数
+                                $this->flowLogService->log(
+                                    $assignment->user_id,
+                                    'orders',
+                                    $order->method,
+                                    $order->id,
+                                    -$order->fee
+                                );
+                            });
+                            $message = "您接受委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
+                            GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+                        }
+                    }
+                }
+
                 break;
             default:
                 header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
                 break;
         }
         return;
+    }
+
+    //退款
+    public function refund($type, $pk)
+    {
+        $user = $this->user;
+
+        if ($type == 'assignment') {
+            /**
+             * @var $assignment Assignment
+             */
+            $assignment = $this->assignmentService->getAssignmentById($pk);
+
+            //只有未采纳过的委托可以主动退款
+            if ($assignment->status != Assignment::STATUS_WAIT_ACCEPT) {
+                return self::notAllowed();
+            }
+
+            if ($assignment->user_id != $user->id) {
+                return self::notAllowed();
+            }
+
+            /**
+             * @var $order Order
+             */
+            $order = Order::where('type', $type)->where('primary_key', $pk)->where('status', 'succeed')->first();
+
+            if (!$order) {
+                return self::error(self::CODE_ORDER_STATUS_ABNORMAL, '订单状态异常，无法完成退款');
+            } else {
+                if ($order->method == Order::BALANCE) {
+                    DB::transaction(function () use ($order, $user, $assignment) {
+
+                        //返回余额
+                        $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
+                        $originBalance = $balance[0];
+                        $finalBalance = $originBalance + $order->fee;
+
+                        $userInfo = $user->userInfo;
+                        $userInfo->balance = $finalBalance;
+                        $userInfo->save();
+
+                        //修改委托状态
+                        $assignment->status = Assignment::STATUS_CANCELED;
+                        $assignment->save();
+
+                        //修改订单状态
+                        $order->status = Order::STATUS_REFUNDED;
+                        $order->save();
+
+                        //添加操作日志
+                        $this->operationLogService->log(
+                            OperationLog::OPERATION_REFUND,
+                            OperationLog::TABLE_ASSIGNMENTS,
+                            $assignment->id,
+                            $assignment->user_id,
+                            OperationLog::STATUS_WAIT_ACCEPT,
+                            OperationLog::STATUS_CANCELED
+                        );
+
+                        //流水日志 负数
+                        $this->flowLogService->log(
+                            $assignment->user_id,
+                            'orders',
+                            $order->method,
+                            $order->id,
+                            -$order->fee
+                        );
+                    });
+
+                    return self::success("退款成功，余额已返回您的账户，委托取消");
+                } else {
+                    $charge_id = $order->charge;
+
+                    \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
+                    \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
+
+                    $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
+
+                    //todo 扣除支付的手续费
+                    $refund = $ch->refunds->create(
+                        array(
+                            'amount' => $order->fee,
+                            'description' => 'Refund Description'
+                        )
+                    );
+
+                    //todo 判断refund 对象
+
+
+                    //把委托状态改为退款中   将退款id 写入order
+                    DB::transaction(function () use ($order, $assignment, $refund) {
+                        $assignment->status = Assignment::STATUS_REFUNDING;
+                        $assignment->save();
+
+                        $order->refund_id = $refund->id;
+                        $order->save();
+                    });
+                }
+            }
+        }
     }
 
     public function withdrawals()
@@ -317,78 +560,5 @@ class PayController extends BaseController
 
         return $withdrawals;
 
-
     }
-
-    //
-//    public function notify(Request $request)
-//    {
-//        $pay = new Pay($this->config);
-//
-//        //支付宝通知
-//        if ($pay->driver('alipay')->gateway()->verify($request->all())) {
-//
-//            $outTradeNo = $request->out_trade_no;
-//            $totalAmount = $request->total_amount;
-//
-//            file_put_contents(storage_path('notify.txt'), "收到来自支付宝的异步通知\r\n", FILE_APPEND);
-//            file_put_contents(storage_path('notify.txt'), '订单号：' . $request->out_trade_no . "\r\n", FILE_APPEND);
-//            file_put_contents(storage_path('notify.txt'), '订单金额：' . $request->total_amount . "\r\n\r\n", FILE_APPEND);
-//
-//            /**
-//             * @var $order Order
-//             */
-//            $order = $this->orderService->getOrderByOutTradeNo($outTradeNo);
-//
-//            //如果回调的时候，订单已经是成功状态
-//            if (!$order->status == Order::STATUS_SUCCEED) {
-//                Log::warning("订单$order->id, 在回调时已经是已支付状态");
-//            }
-//
-//
-//            DB::transaction(function () use ($order) {
-//                //改变订单状态
-//                $order->status = Order::STATUS_SUCCEED;
-//                $order->save();
-//
-//                if ($order->type == Order::TYPE_ASSIGNMENT) {
-//                    /**
-//                     * @var $assignment Assignment
-//                     */
-//                    //改变委托状态
-//                    $assignment = $this->assignmentService->getAssignmentById($order->primary_key);
-//                    $assignment->status = Assignment::STATUS_WAIT_ACCEPT;
-//                    $assignment->save();
-//
-//                    //记录委托操作日志
-//                    $this->operationLogService->log(
-//                        OperationLog::OPERATION_PAY,
-//                        OperationLog::TABLE_ASSIGNMENTS,
-//                        $assignment->id,
-//                        $assignment->user_id,
-//                        OperationLog::STATUS_UNPAID,
-//                        OperationLog::STATUS_WAIT_ACCEPT
-//                    );
-//
-//                    //记录流水日志
-//                    $this->flowLogService->log(
-//                        $assignment->user_id,
-//                        'orders',
-//                        'alipay',
-//                        $order->id,
-//                        $assignment->reward
-//                    );
-//                }
-//
-//
-//            });
-//
-//        } else {
-//            file_put_contents(storage_path('notify.txt'), "收到异步通知\r\n", FILE_APPEND);
-//        }
-//
-//        echo "success";
-//    }
-
-
 }

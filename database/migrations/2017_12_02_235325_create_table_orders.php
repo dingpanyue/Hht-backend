@@ -25,6 +25,7 @@ class CreateTableOrders extends Migration
             $table->string('status')->comment('状态');
             $table->integer('user_id')->nullable()->comment('用户id');
             $table->string('charge_id')->nullable()->comment('ping++支付id');
+            $table->string('refund_id')->nullable()->comment('ping++退款id');
             $table->timestamps();
         });
     }
