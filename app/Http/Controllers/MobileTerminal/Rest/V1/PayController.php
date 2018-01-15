@@ -388,7 +388,7 @@ class PayController extends BaseController
                                 $order->status = Order::STATUS_REFUNDED;
                                 $order->save();
 
-                                $assignment->status = Assignment::STATUS_CANCELED;
+                                $assignment->status = Assignment::STATUS_FAILED;
                                 $assignment->save();
 
                                 //添加操作日志
@@ -414,8 +414,41 @@ class PayController extends BaseController
                             GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
                         }
                     }
-                }
 
+                    if ($order->type ==  Order::TYPE_SERVICE) {
+
+                        $acceptedService = AcceptedService::where('id', $order->primary_key)->first();
+                        DB::transaction(function () use ($order, $acceptedService) {
+
+                            $order->status = Order::STATUS_REFUNDED;
+                            $order->save();
+
+                            $acceptedService->status = Assignment::STATUS_FAILED;
+                            $acceptedService->save();
+
+                            //添加操作日志
+                            $this->operationLogService->log(
+                                OperationLog::OPERATION_REFUND,
+                                OperationLog::TABLE_ACCEPTED_SERVICES,
+                                $acceptedService->id,
+                                0,
+                                OperationLog::STATUS_REFUNDING,
+                                OperationLog::STATUS_FAILED
+                            );
+
+                            //流水日志 负数
+                            $this->flowLogService->log(
+                                $acceptedService->assign_user_id,
+                                'orders',
+                                $order->method,
+                                $order->id,
+                                -$order->fee
+                            );
+                        });
+                        $message = "您购买的服务的退款已处理成功，退款打入您的支付账户，委托取消";
+                        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+                    }
+                }
                 break;
             default:
                 header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
