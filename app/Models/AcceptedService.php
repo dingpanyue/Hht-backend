@@ -23,6 +23,7 @@ class AcceptedService extends Model
     const STATUS_ARBITRATED = 5;
     const STATUS_FINISHED = 6;
     const STATUS_FAILED = 7;
+    const STATUS_REFUNDING = 8;
 
     public $fillable = [
         'assign_user_id',

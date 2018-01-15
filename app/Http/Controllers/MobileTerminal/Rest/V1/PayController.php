@@ -398,7 +398,7 @@ class PayController extends BaseController
                                     $assignment->id,
                                     $assignment->user_id,
                                     OperationLog::STATUS_REFUNDING,
-                                    OperationLog::STATUS_CANCELED
+                                    OperationLog::STATUS_FAILED
                                 );
 
                                 //流水日志 负数
@@ -479,7 +479,7 @@ class PayController extends BaseController
                             $assignment->id,
                             $assignment->user_id,
                             OperationLog::STATUS_WAIT_ACCEPT,
-                            OperationLog::STATUS_CANCELED
+                            OperationLog::STATUS_FAILED
                         );
 
                         //流水日志 负数

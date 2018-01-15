@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\OperationLog;
+use App\Models\Order;
 use App\Models\TimedTask;
 use App\Models\User;
 use Illuminate\Contracts\Encryption\EncryptException;
@@ -21,11 +22,13 @@ class AssignmentService
 {
     protected $assignmentEloqument;
     protected $operationLogService;
+    protected $flowLogService;
 
-    public function __construct(Assignment $assignment, OperationLogService $operationLogService)
+    public function __construct(Assignment $assignment, OperationLogService $operationLogService, FlowLogService $flowLogService)
     {
         $this->assignmentEloqument = $assignment;
         $this->operationLogService = $operationLogService;
+        $this->flowLogService = $flowLogService;
     }
 
     //创建（发布）委托
@@ -240,8 +243,9 @@ class AssignmentService
         $rate = $globalConfigs['service_fee_rate'];
 
         $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
+        $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
 
-        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $rate, $assignment) {
+        $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $rate, $assignment, $order) {
 
             $acceptedAssignment->status = AcceptedAssignment::STATUS_FINISHED;
             $acceptedAssignment->save();
@@ -260,7 +264,14 @@ class AssignmentService
             $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedAssignment->reward;
             $serveUserInfo->save();
 
-            //todo 增加流水记录（余额的形式）
+            //流水日志
+            $this->flowLogService->log(
+                $acceptedAssignment->serve_user_id,
+                'orders',
+                $order->method,
+                $order->id,
+                -$order->fee
+            );
 
             $assignUser = $acceptedAssignment->assignUser;
             $assignUserInfo = $assignUser->userInfo;
