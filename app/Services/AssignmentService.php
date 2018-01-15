@@ -261,7 +261,7 @@ class AssignmentService
             //更新余额
             $serveUserInfo->balance = $serveUserInfo->balance + $acceptedAssignment->reward * (1 - $rate);
             //更新积分
-            $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedAssignment->reward;
+            $serveUserInfo->serve_points = $serveUserInfo->serve_points + (int)$acceptedAssignment->reward;
             $serveUserInfo->save();
 
             //流水日志
@@ -278,7 +278,7 @@ class AssignmentService
 
 
             //更新委托人积分
-            $assignUserInfo->assign_points = $assignUserInfo->assign_ponts + (int)$acceptedAssignment->reward;
+            $assignUserInfo->assign_points = $assignUserInfo->assign_points + (int)$acceptedAssignment->reward;
             $assignUserInfo->save();
 
             return $acceptedAssignment;

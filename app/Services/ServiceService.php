@@ -241,7 +241,7 @@ class ServiceService
             //更新余额
             $serveUserInfo->balance = $serveUserInfo->balance + $acceptedService->reward * (1 - $rate);
             //更新积分
-            $serveUserInfo->serve_points = $serveUserInfo->serve_ponts + (int)$acceptedService->reward;
+            $serveUserInfo->serve_points = $serveUserInfo->serve_points + (int)$acceptedService->reward;
             $serveUserInfo->save();
 
             //todo 增加流水记录（余额的形式）
@@ -258,7 +258,7 @@ class ServiceService
 
 
             //更新委托人积分
-            $assignUserInfo->assign_points = $assignUserInfo->assign_ponts + (int)$acceptedService->reward;
+            $assignUserInfo->assign_points = $assignUserInfo->assign_points + (int)$acceptedService->reward;
             $assignUserInfo->save();
 
             return $acceptedService;
