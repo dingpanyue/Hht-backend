@@ -381,7 +381,7 @@ class PayController extends BaseController
                         /**
                          * @var $assignment Assignment
                          */
-                        $assignment = Assignment::where('id', $order->primary_key)->get();
+                        $assignment = Assignment::where('id', $order->primary_key)->first();
 
                         if ($assignment->status == Assignment::STATUS_REFUNDING) {
                             DB::transaction(function () use ($order, $assignment) {

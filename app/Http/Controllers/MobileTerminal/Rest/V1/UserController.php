@@ -98,7 +98,7 @@ class UserController extends BaseController
         //获取用户
         $visitUser = $this->user;
 
-        if ($id == $visitUser->id) {
+        if ($id == 'self') {
             $user = $visitUser;
         } else {
             $user = User::find($id);
@@ -111,7 +111,7 @@ class UserController extends BaseController
 
         $user->user_info = $userInfo;
 
-        if ($id == $visitUser->id) {
+        if ($id == 'self') {
             //获取余额
             $balance = $userInfo->balance;
             $user->balance = $balance;
