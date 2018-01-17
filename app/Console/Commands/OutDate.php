@@ -240,6 +240,7 @@ class OutDate extends Command
             //服务在被购买之后  双方都没有后续处理   则判定服务失败   信用等级降低   退款     双方推送
             if ($acceptedService->status == AcceptedService::STATUS_ADAPTED) {
 
+                echo 1;
                 DB::transaction(function () use ($acceptedService) {
                     //修改 采纳的服务状态为失败
                     $acceptedService->status = AcceptedService::STATUS_FAILED;
@@ -258,42 +259,41 @@ class OutDate extends Command
                         Log::info("处理接收的服务 $acceptedService->id 时出现错误，没有对应的订单");
                     } else {
                         if ($order->method == Order::BALANCE) {
-                            DB::transaction(function () use ($order, $acceptedService) {
 
-                                //返回余额
-                                $user = $acceptedService->assign_user;
-                                $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
-                                $originBalance = $balance[0];
-                                $finalBalance = $originBalance + $order->fee;
+                            //返回余额
+                            $user = $acceptedService->assign_user;
+                            $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
+                            $originBalance = $balance[0];
+                            $finalBalance = $originBalance + $order->fee;
 
-                                $userInfo = $user->userInfo;
-                                $userInfo->balance = $finalBalance;
-                                $userInfo->save();
+                            $userInfo = $user->userInfo;
+                            $userInfo->balance = $finalBalance;
+                            $userInfo->save();
 
-                                //修改订单状态
-                                $order->status = Order::STATUS_REFUNDED;
-                                $order->save();
+                            //修改订单状态
+                            $order->status = Order::STATUS_REFUNDED;
+                            $order->save();
 
-                                //添加操作日志
-                                $this->operationLogService->log(
-                                    OperationLog::OPERATION_REFUND,
-                                    OperationLog::TABLE_ACCEPTED_SERVICES,
-                                    $acceptedService->id,
-                                    0,
-                                    OperationLog::STATUS_ADAPTED,
-                                    OperationLog::STATUS_FAILED,
-                                    '服务人逾期未提交完成确认，服务失败'
-                                );
+                            //添加操作日志
+                            $this->operationLogService->log(
+                                OperationLog::OPERATION_REFUND,
+                                OperationLog::TABLE_ACCEPTED_SERVICES,
+                                $acceptedService->id,
+                                0,
+                                OperationLog::STATUS_ADAPTED,
+                                OperationLog::STATUS_FAILED,
+                                '服务人逾期未提交完成确认，服务失败'
+                            );
 
-                                //流水日志 负数
-                                $this->flowLogService->log(
-                                    $acceptedService->assign_user_id,
-                                    'orders',
-                                    $order->method,
-                                    $order->id,
-                                    -$order->fee
-                                );
-                            });
+                            //流水日志 负数
+                            $this->flowLogService->log(
+                                $acceptedService->assign_user_id,
+                                'orders',
+                                $order->method,
+                                $order->id,
+                                -$order->fee
+                            );
+
 
                             $message = "您提供的服务由于超过期限没有申请完成，服务已失败";
                             GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
@@ -320,13 +320,13 @@ class OutDate extends Command
                             //todo 判断refund 对象
 
                             //把服务状态改为退款中   将退款id 写入order
-                            DB::transaction(function () use ($order, $acceptedService, $refund) {
-                                $acceptedService->status = AcceptedService::STATUS_REFUNDING;
-                                $acceptedService->save();
 
-                                $order->refund_id = $refund->id;
-                                $order->save();
-                            });
+                            $acceptedService->status = AcceptedService::STATUS_REFUNDING;
+                            $acceptedService->save();
+
+                            $order->refund_id = $refund->id;
+                            $order->save();
+
 
                             $message = "您提供的服务由于超过期限没有申请完成，服务已失败";
                             GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
