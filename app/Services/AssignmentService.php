@@ -50,7 +50,7 @@ class AssignmentService
         $timedTask = new TimedTask();
         $timedTask->name = "委托$assignment->id expire";
         $timedTask->command = "expire assign $assignment->id";
-        $timedTask->start_time = $assignment->expired_at;
+        $timedTask->start_time = date('Y-m-d H:i', strtotime($assignment->expired_at)) . ':00';
         $timedTask->result = 0;
         $timedTask->save();
 
@@ -189,7 +189,7 @@ class AssignmentService
             $timedTask = new TimedTask();
             $timedTask->name = "接受的委托$acceptedAssignment->id 达到deadline";
             $timedTask->command = "outDate assign $acceptedAssignment->id";
-            $timedTask->start_time = $acceptedAssignment->deadline;
+            $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedAssignment->deadline)) . ':00';
             $timedTask->result = 0;
             $timedTask->save();
 

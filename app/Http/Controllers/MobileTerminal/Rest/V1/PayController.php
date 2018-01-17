@@ -216,7 +216,7 @@ class PayController extends BaseController
                         $timedTask = new TimedTask();
                         $timedTask->name = "接受的服务 $acceptedService->id 达到deadline";
                         $timedTask->command = "outDate serve $acceptedService->id";
-                        $timedTask->start_time = $acceptedService->deadline;
+                        $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedService->deadline)) . ':00';
                         $timedTask->result = 0;
                         $timedTask->save();
 
@@ -342,7 +342,7 @@ class PayController extends BaseController
                         $timedTask = new TimedTask();
                         $timedTask->name = "接受的服务 $acceptedService->id 达到deadline";
                         $timedTask->command = "outDate serve $acceptedService->id";
-                        $timedTask->start_time = $acceptedService->deadline;
+                        $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedService->deadline)) . ':00';
                         $timedTask->result = 0;
                         $timedTask->save();
 
