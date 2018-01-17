@@ -100,6 +100,7 @@ class ServiceController extends BaseController
     {
         //当前登陆用户
         $user = $this->user;
+        dd($user);
         //用户输入
         $inputs = $request->only('title', 'classification', 'introduction', 'province_id', 'city_id', 'area_id',
             'lng', 'lat', 'detail_address',  'expired_at', 'comment');
