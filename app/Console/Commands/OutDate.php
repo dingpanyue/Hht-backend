@@ -260,7 +260,7 @@ class OutDate extends Command
                         if ($order->method == Order::BALANCE) {
 
                             //返回余额
-                            $user = $acceptedService->assign_user;
+                            $user = $acceptedService->assignUser;
                             $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
                             $originBalance = $balance[0];
                             $finalBalance = $originBalance + $order->fee;
