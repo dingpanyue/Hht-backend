@@ -43,7 +43,7 @@ class Timer extends Command
         $nowTime = date('Y-m-d H:i') . ':00';
         $this->info($nowTime);
         $timed_tasks = TimedTask::where('start_time', $nowTime)->get();
-
+        $this->info(count($timed_tasks));
         foreach ($timed_tasks as $timed_task) {
             $timed_task->result = 1;
             $out = [];
