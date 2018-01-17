@@ -238,11 +238,11 @@ class OutDate extends Command
             $acceptedService = AcceptedService::find($id);
 
             //服务在被购买之后  双方都没有后续处理   则判定服务失败   信用等级降低   退款     双方推送
-            if ($acceptedService->status == AcceptedAssignment::STATUS_ADAPTED) {
+            if ($acceptedService->status == AcceptedService::STATUS_ADAPTED) {
 
                 DB::transaction(function () use ($acceptedService) {
                     //修改 采纳的服务状态为失败
-                    $acceptedService->status = AcceptedAssignment::STATUS_FAILED;
+                    $acceptedService->status = AcceptedService::STATUS_FAILED;
                     $acceptedService->save();
 
                     //serve_user 信用等级降低
