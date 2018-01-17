@@ -214,7 +214,7 @@ class OutDate extends Command
                         OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
                         $acceptedAssignment->id,
                         0,
-                        AcceptedAssignment::STATUS_DEALT,
+                        OperationLog::STATUS_DEALT,
                         OperationLog::STATUS_FINISHED,
                         '委托已被提交确认，购买人过期未确认，已自动完成'
                     );
@@ -357,7 +357,7 @@ class OutDate extends Command
                         OperationLog::TABLE_ACCEPTED_SERVICES,
                         $acceptedService->id,
                         0,
-                        AcceptedAssignment::STATUS_DEALT,
+                        OperationLog::STATUS_DEALT,
                         OperationLog::STATUS_FINISHED
                     );
 
