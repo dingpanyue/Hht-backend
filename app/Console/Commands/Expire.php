@@ -90,7 +90,8 @@ class Expire extends Command
                         $assignment->id,
                         0,
                         OperationLog::STATUS_WAIT_ACCEPT,
-                        OperationLog::STATUS_FAILED
+                        OperationLog::STATUS_FAILED,
+                        "委托已过期，无人接收"
                     );
 
                     //流水日志 负数

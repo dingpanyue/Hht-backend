@@ -111,7 +111,8 @@ class OutDate extends Command
                                 $acceptedAssignment->id,
                                 0,
                                 OperationLog::STATUS_ADAPTED,
-                                OperationLog::STATUS_FAILED
+                                OperationLog::STATUS_FAILED,
+                                '服务人逾期未提交完成，委托失败'
                             );
 
                             //流水日志 负数
