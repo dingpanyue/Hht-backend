@@ -55,7 +55,6 @@ class BaseController extends Controller
 
 
 
-
     /**
      * 获取请求所要求的版本号
      * @return int|string

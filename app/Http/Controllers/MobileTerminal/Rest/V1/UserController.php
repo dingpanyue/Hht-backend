@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Models\Message;
 use App\Models\User;
+use App\Models\UserAccount;
 use App\Models\UserAddress;
 use App\Models\UserInfo;
 use App\Services\AddressService;
@@ -51,7 +52,7 @@ class UserController extends BaseController
 
         $userInfo = $user->userInfo;
 
-            if (!$userInfo) {
+        if (!$userInfo) {
             $userInfo = new UserInfo();
         } else {
             if ($userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
@@ -67,7 +68,6 @@ class UserController extends BaseController
         $userInfo->save();
 
         //todo 调用认证接口对用户进行认证 改变状态
-
 
 
         return self::success($user);
@@ -145,7 +145,7 @@ class UserController extends BaseController
             })->orWhere(function ($query) use ($user, $id) {
                 $query->where('from_user_id', $id)->where('to_user_id', $user->id);
             });
-            })
+        })
             ->orderBy('created_at', 'desc')
             ->paginate();
 
@@ -288,5 +288,85 @@ class UserController extends BaseController
         } else {
             return self::error(self::CODE_FAIL_TO_SAVE_IMAGE, "图片保存出错");
         }
+    }
+
+    //设置支付宝账户
+    public function setUserAlipayAccount(Request $request)
+    {
+        $user = $this->user;
+
+        $all = $request->all();
+        $rules = [
+            'account' => 'required',
+        ];
+        $messages = [
+            'account.required' => '请填写支付宝账户'
+        ];
+        $validator = Validator::make($all, $rules, $messages);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        $userAccount = $user->userAccount;
+
+        if (!$userAccount) {
+            $userAccount = new UserAccount();
+            $userAccount->user_id = $user->id;
+        }
+
+        $userAccount->alipay = $all['account'];
+
+        if ($userAccount->save()) {
+            return self::success($userAccount);
+        } else {
+            return self::parametersIllegal();
+        }
+    }
+
+    //设置支付密码
+    public function setUserPaymentPassword(Request $request)
+    {
+        $user = $this->user;
+
+        $all = $request->all();
+        $rules = [
+            'password' => 'required',
+        ];
+        $messages = [
+            'account.required' => '请填写支付密码'
+        ];
+        $validator = Validator::make($all, $rules, $messages);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        $userAccount = $user->userAccount;
+
+        if (!$userAccount) {
+            $userAccount = new UserAccount();
+            $userAccount->user_id = $user->id;
+        }
+
+        $userAccount->password = $all['password'];
+
+        if ($userAccount->save()) {
+            return self::success($userAccount);
+        } else {
+            return self::parametersIllegal();
+        }
+    }
+
+    //获取用户微信 授权回调地址
+    public function getUserAuthAddress()
+    {
+
+    }
+
+    //接收用户网页授权回调
+    public function verify()
+    {
+
     }
 }

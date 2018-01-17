@@ -21,6 +21,15 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     //登录
     Route::post('/login', 'LoginController@login');
 
+    Route::group(['prefix' => 'regions'], function (){
+        //省份
+        Route::get('/provinces', ['as' => 'Provinces', 'uses' => 'RegionController@provinces']);
+        //城市
+        Route::get('/{province_id}/cities', ['as' => 'Cities', 'uses' => 'RegionController@cities']);
+        //地区
+        Route::get('/{city_id}/areas', ['as' => 'Areas', 'uses' => 'RegionController@areas']);
+    });
+
     //委托接口
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
         //获取所有委托的类目
@@ -41,8 +50,30 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/deal/{id}', ['as' => '', 'uses' => 'AssignmentController@dealAcceptedAssignment']);
         //确认完成  委托
         Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
-
     });
+
+    //地区接口
+    Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
+        //获取所有委托的类目
+        Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
+        //获取委托列表
+        Route::get('/index', ['as' => 'Index', 'uses' => 'AssignmentController@index']);
+        //获取单个委托详情
+        Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
+        //发布委托
+        Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publishAssignment']);
+        //上传委托图片
+        Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'AssignmentController@upload']);
+        //接受委托
+        Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@acceptAssignment']);
+        //采纳 接受的委托
+        Route::post('/adapt/{id}', ['as' => '', 'uses' => 'AssignmentController@adaptAcceptedAssignment']);
+        //告知完成  被采纳的 接收的委托
+        Route::post('/deal/{id}', ['as' => '', 'uses' => 'AssignmentController@dealAcceptedAssignment']);
+        //确认完成  委托
+        Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
+    });
+
 
     //服务接口
     Route::group(['prefix' => 'services', 'middleware' => 'auth:api'], function () {
@@ -103,7 +134,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //退款接口
         Route::get('/refund/{type}/{pk}', ['as' => '', 'uses' => 'PayController@refund']);
         //提现接口
-        Route::get('/withdrawals', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
+        Route::post('/withdrawal', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
 
     });
 
