@@ -243,7 +243,7 @@ class ServiceController extends BaseController
         }
 
         if ($acceptedService->serve_user_id != $user->id) {
-            return self::notAllowed();
+            return self::notAllowed("您不是该服务的发布人");
         } else {
             $acceptedAssignment = $this->serviceService->acceptBoughtService($acceptedService);
             return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
