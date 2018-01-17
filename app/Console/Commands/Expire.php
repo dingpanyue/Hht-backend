@@ -11,6 +11,7 @@ use App\Services\GatewayWorkerService;
 use App\Services\OperationLogService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class Expire extends Command
 {
@@ -68,6 +69,10 @@ class Expire extends Command
 
                 $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
 
+                if (!$order) {
+                    Log::info("处理委托 $assignment->id outdate时出现错误，没有对应的订单");
+                    throw new \Exception();
+                }
                 if ($order->method == Order::BALANCE) {
                     //返回余额
                     $user = $assignment->user;
@@ -137,6 +142,26 @@ class Expire extends Command
                     GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
                 }
             });
+        }
+
+        //未支付的
+        if ($assignment->status == Assignment::STATUS_UNPAID) {
+
+            $assignment->status = Assignment::STATUS_FAILED;
+            $assignment->save();
+
+            $message = "您发布的委托由于过期仍未支付，已经自动取消";
+            GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+
+            $this->operationLogService->log(
+                OperationLog::OPERATION_CANCEL,
+                OperationLog::TABLE_ASSIGNMENTS,
+                $assignment->id,
+                0,
+                OperationLog::STATUS_UNPAID,
+                OperationLog::STATUS_FAILED,
+                "委托过期无人支付，委托失败"
+            );
         }
     }
 }

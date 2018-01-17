@@ -86,7 +86,7 @@ class OutDate extends Command
                     $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
 
                     if (!$order) {
-                        Log::info("处理委托 $assignment->id 时出现错误，没有对应的订单");
+                        Log::info("处理委托 $assignment->id outdate时出现错误，没有对应的订单");
                         throw new \Exception();
                     } else {
                         if ($order->method == Order::BALANCE) {
@@ -215,7 +215,8 @@ class OutDate extends Command
                         $acceptedAssignment->id,
                         0,
                         AcceptedAssignment::STATUS_DEALT,
-                        OperationLog::STATUS_FINISHED
+                        OperationLog::STATUS_FINISHED,
+                        '委托已被提交确认，购买人过期未确认，已自动完成'
                     );
 
                     $message = "您提交完成的委托已经自动完成,报酬已经打入您的余下额";
@@ -280,7 +281,8 @@ class OutDate extends Command
                                     $acceptedService->id,
                                     0,
                                     OperationLog::STATUS_ADAPTED,
-                                    OperationLog::STATUS_FAILED
+                                    OperationLog::STATUS_FAILED,
+                                    '服务人逾期未提交完成确认，服务失败'
                                 );
 
                                 //流水日志 负数
