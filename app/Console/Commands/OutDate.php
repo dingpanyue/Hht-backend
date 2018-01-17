@@ -236,11 +236,10 @@ class OutDate extends Command
         //服务过期(指到达deadline)
         if ($type == 'serve') {
             $acceptedService = AcceptedService::find($id);
-
+            echo 1;
             //服务在被购买之后  双方都没有后续处理   则判定服务失败   信用等级降低   退款     双方推送
             if ($acceptedService->status == AcceptedService::STATUS_ADAPTED) {
 
-                echo 1;
                 DB::transaction(function () use ($acceptedService) {
                     //修改 采纳的服务状态为失败
                     $acceptedService->status = AcceptedService::STATUS_FAILED;
