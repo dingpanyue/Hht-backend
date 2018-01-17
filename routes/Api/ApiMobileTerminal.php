@@ -125,6 +125,14 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/services', ['as' => '', 'uses' => 'ServiceController@myServices']);
         //获取作为委托人购买的所有服务
         Route::get('/accepted_services', ['as' => '', 'uses' => 'ServiceController@myAcceptedServices']);
+        //修改/设置用户支付宝账户
+        Route::post('/alipay_account' , ['as' => '', 'uses' => 'UserController@setUserAlipayAccount']);
+        //设置用户支付密码
+        Route::post('/payment_password', ['as' => '', 'uses' => 'UserController@setUserPaymentPassword']);
+        //获取微信授权页面
+        Route::post('/wechat_auth', ['as' => '', 'uses' => 'UserController@getUserWechatAuthUrl']);
+        //微信回调关联用户
+        Route::post('/user/{id}/wechat_auth', ['as' => '', 'uses' => 'UserController@verify']);
     });
 
     //支付接口
@@ -135,7 +143,6 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/refund/{type}/{pk}', ['as' => '', 'uses' => 'PayController@refund']);
         //提现接口
         Route::post('/withdrawal', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
-
     });
 
 

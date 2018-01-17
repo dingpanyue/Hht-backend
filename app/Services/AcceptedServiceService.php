@@ -13,6 +13,7 @@ use App\Models\User;
 class AcceptedServiceService
 {
     protected $acceptedServiceEloqument;
+
     protected $operationLogService;
 
     public function __construct(AcceptedService $acceptedServiceEloqument, OperationLogService $operationLogService)

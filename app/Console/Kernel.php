@@ -15,7 +15,8 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         //
         'App\Console\Commands\Timer',
-        'App\Console\Commands\OutDate'
+        'App\Console\Commands\OutDate',      //过期
+        'App\Console\Commands\Expire',      //失效
     ];
 
     /**

@@ -46,6 +46,14 @@ class AssignmentService
             throw new Exception($e->getMessage(), $e->getCode());
         }
 
+        //定时任务
+        $timedTask = new TimedTask();
+        $timedTask->name = "委托$assignment->id expire";
+        $timedTask->command = "expire assign $assignment->id";
+        $timedTask->start_time = $assignment->expired_at;
+        $timedTask->result = 0;
+        $timedTask->save();
+
         //日志记录 创建 状态未支付
         $this->operationLogService->log(
             OperationLog::OPERATION_CREATE,

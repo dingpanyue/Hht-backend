@@ -125,6 +125,9 @@ class UserController extends BaseController
                 ->get();
 
             $user->messages = $Messages;
+
+            $userAccount = $user->userAccount;
+            $user->userccount = $userAccount;
         }
 
         return self::success($user);

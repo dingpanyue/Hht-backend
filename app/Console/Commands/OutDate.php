@@ -61,8 +61,7 @@ class OutDate extends Command
         $id = $this->argument('id');
 
         //委托过期(指到达deadline)
-        if ($type == 'assign')
-        {
+        if ($type == 'assign') {
             $acceptedAssignment = AcceptedAssignment::find($id);
 
             //委托在被采纳之后  双方都没有后续处理   则判定委托失败   信用等级降低   退款     双方推送
@@ -71,7 +70,6 @@ class OutDate extends Command
                     //修改 采纳的委托状态为失败
                     $acceptedAssignment->status = AcceptedAssignment::STATUS_FAILED;
                     $acceptedAssignment->save();
-
 
                     //修改委托状态为失败
                     $assignment = $acceptedAssignment->assignment;
@@ -89,43 +87,41 @@ class OutDate extends Command
 
                     if (!$order) {
                         Log::info("处理委托 $assignment->id 时出现错误，没有对应的订单");
+                        throw new \Exception();
                     } else {
                         if ($order->method == Order::BALANCE) {
-                            DB::transaction(function () use ($order, $assignment, $acceptedAssignment) {
+                            //返回余额
+                            $user = $assignment->user;
+                            $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
+                            $originBalance = $balance[0];
+                            $finalBalance = $originBalance + $order->fee;
 
-                                //返回余额
-                                $user = $assignment->user;
-                                $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
-                                $originBalance = $balance[0];
-                                $finalBalance = $originBalance + $order->fee;
+                            $userInfo = $user->userInfo;
+                            $userInfo->balance = $finalBalance;
+                            $userInfo->save();
 
-                                $userInfo = $user->userInfo;
-                                $userInfo->balance = $finalBalance;
-                                $userInfo->save();
+                            //修改订单状态
+                            $order->status = Order::STATUS_REFUNDED;
+                            $order->save();
 
-                                //修改订单状态
-                                $order->status = Order::STATUS_REFUNDED;
-                                $order->save();
+                            //添加操作日志
+                            $this->operationLogService->log(
+                                OperationLog::OPERATION_REFUND,
+                                OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
+                                $acceptedAssignment->id,
+                                0,
+                                OperationLog::STATUS_ADAPTED,
+                                OperationLog::STATUS_FAILED
+                            );
 
-                                //添加操作日志
-                                $this->operationLogService->log(
-                                    OperationLog::OPERATION_REFUND,
-                                    OperationLog::TABLE_ACCEPTED_ASSIGNMENTS,
-                                    $acceptedAssignment->id,
-                                    0,
-                                    OperationLog::STATUS_ADAPTED,
-                                    OperationLog::STATUS_FAILED
-                                );
-
-                                //流水日志 负数
-                                $this->flowLogService->log(
-                                    $assignment->user_id,
-                                    'orders',
-                                    $order->method,
-                                    $order->id,
-                                    -$order->fee
-                                );
-                            });
+                            //流水日志 负数
+                            $this->flowLogService->log(
+                                $assignment->user_id,
+                                'orders',
+                                $order->method,
+                                $order->id,
+                                -$order->fee
+                            );
 
                             $message = "您接受的委托由于超过期限未作处理，委托已失败";
                             GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
@@ -152,22 +148,11 @@ class OutDate extends Command
                             //todo 判断refund 对象
 
                             //把委托状态改为退款中   将退款id 写入order
-                            DB::transaction(function () use ($order, $assignment, $refund) {
-                                $assignment->status = Assignment::STATUS_REFUNDING;
-                                $assignment->save();
+                            $assignment->status = Assignment::STATUS_REFUNDING;
+                            $assignment->save();
 
-                                $order->refund_id = $refund->id;
-                                $order->save();
-                            });
-
-                            //把委托状态改为退款中   将退款id 写入order
-                            DB::transaction(function () use ($order, $assignment, $refund) {
-                                $assignment->status = Assignment::STATUS_REFUNDING;
-                                $assignment->save();
-
-                                $order->refund_id = $refund->id;
-                                $order->save();
-                            });
+                            $order->refund_id = $refund->id;
+                            $order->save();
 
                             $message = "您接受的委托由于超过期限未作处理，委托已失败";
                             GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
@@ -247,8 +232,7 @@ class OutDate extends Command
         }
 
         //服务过期(指到达deadline)
-        if ($type == 'serve')
-        {
+        if ($type == 'serve') {
             $acceptedService = AcceptedService::find($id);
 
             //服务在被购买之后  双方都没有后续处理   则判定服务失败   信用等级降低   退款     双方推送

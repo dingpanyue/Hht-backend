@@ -412,7 +412,7 @@ class PayController extends BaseController
                                     -$order->fee
                                 );
                             });
-                            $message = "您接受委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
+                            $message = "您发布的委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
                             GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
                         }
                     }
@@ -500,7 +500,7 @@ class PayController extends BaseController
                         $userInfo->save();
 
                         //修改委托状态
-                        $assignment->status = Assignment::STATUS_CANCELED;
+                        $assignment->status = Assignment::STATUS_FAILED;
                         $assignment->save();
 
                         //修改订单状态

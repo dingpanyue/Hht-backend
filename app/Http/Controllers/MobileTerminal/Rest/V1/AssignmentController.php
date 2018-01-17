@@ -112,6 +112,10 @@ class AssignmentController extends BaseController
             "expired_at.after" => "委托过期时间不合理"
         ]);
 
+        if ($inputs['deadline'] > $inputs['expired_at']) {
+            return self::parametersIllegal("委托期限必须大于截止时间");
+        }
+
         if ($validator->fails()) {
             return self::parametersIllegal($validator->messages()->first());
         }
