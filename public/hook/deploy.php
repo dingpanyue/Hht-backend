@@ -8,7 +8,7 @@ try {
 }
 catch(Exception $e) {
     //log the error
-    file_put_contents('/var/www/hht-backend/storage/logs/github.txt', $e . ' ' . $payload, FILE_APPEND);
+    file_put_contents('/var/www/hht-backend/storage/logs/github.txt', 'error'.$e . ' ' . $payload, FILE_APPEND);
     exit(0);
 }
 
