@@ -77,6 +77,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     //服务接口
     Route::group(['prefix' => 'services', 'middleware' => 'auth:api'], function () {
+        //获取委托列表
+        Route::get('/index', ['as' => 'Index', 'uses' => 'ServiceController@index']);
         //获取所有服务的类目
         Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
         //获取单个服务详情
