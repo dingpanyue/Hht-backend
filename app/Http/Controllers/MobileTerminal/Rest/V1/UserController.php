@@ -95,7 +95,6 @@ class UserController extends BaseController
     //获取用户
     public function info($id)
     {
-        dd(9);
         //获取用户
         $visitUser = $this->user;
 
