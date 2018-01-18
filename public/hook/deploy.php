@@ -19,7 +19,7 @@ if ($payload['ref'] === 'refs/heads/develop') {
     $project_directory = '/var/www/hht-backend';
 
     //$output = shell_exec("/var/www/qadoor/qadoor_site/public/hook/deploy.sh");
-    $output = exec("cd /var/www/hht-backend && /usr/local/git/bin/git pull");
+    $output = exec("cd /var/www/hht-backend && /usr/bin/git pull");
 
     //log the request
     file_put_contents('/var/www/hht-backend/storage/logs/github.txt', $output, FILE_APPEND);
