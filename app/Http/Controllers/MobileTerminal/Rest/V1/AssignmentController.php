@@ -62,6 +62,7 @@ class AssignmentController extends BaseController
     //发起委托
     public function publishAssignment(Request $request)
     {
+        dd($request->all());
         //当前登陆用户
         $user = $this->user;
         //用户输入
