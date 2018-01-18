@@ -20,7 +20,7 @@ if ($payload['ref'] === 'refs/heads/develop') {
     $output = exec("cd /var/www/hht-backend && /usr/bin/git pull");
 
     //log the request
-    file_put_contents('/var/www/hht-backend/storage/logs/github.txt', $output, FILE_APPEND);
+    file_put_contents('/var/www/hht-backend/storage/logs/github.txt', 'success'.$output, FILE_APPEND);
 
 }
 ?>
