@@ -5,7 +5,7 @@ set_time_limit(0);
 
 try {
     $payload = json_decode(file_get_contents('php://input'), true);
-    file_get_contents('/var/www/hht-backend/storage/logs/github.txt', file_get_contents('php://input'));
+    file_put_contents('/var/www/hht-backend/storage/logs/github.txt', file_get_contents('php://input'));
     //$payload = json_decode($_REQUEST['payload']);
 }
 catch(Exception $e) {
