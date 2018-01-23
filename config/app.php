@@ -183,7 +183,7 @@ return [
 
         lyt8384\Pingpp\PingppServiceProvider::class,
 
-        Encore\Admin\Providers\AdminServiceProvider::class
+//        Encore\Admin\Providers\AdminServiceProvider::class
     ],
 
     /*
