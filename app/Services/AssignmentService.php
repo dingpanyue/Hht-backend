@@ -99,7 +99,9 @@ class AssignmentService
                     $assignments[$k]->distance = $distance;
                 }
             }
+            dd($assignments);
         }
+
         return $assignments;
     }
 
