@@ -95,6 +95,8 @@ class AssignmentService
                 $distance = Helper::getDistance($params['lng'], $params['lat'], $assignment->lng, $assignment->lat);
                 if ($distance > 5) {
                     unset($assignments[$k]);
+                } else {
+                    $assignments[$k]->distance = $distance;
                 }
             }
         }

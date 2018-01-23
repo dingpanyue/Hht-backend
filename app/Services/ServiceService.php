@@ -86,7 +86,6 @@ class ServiceService
                 }
             }
         }
-        dd($services);
         return $services;
     }
 
