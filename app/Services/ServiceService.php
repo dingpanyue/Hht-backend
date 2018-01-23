@@ -81,6 +81,8 @@ class ServiceService
                 $distance = Helper::getDistance($params['lng'], $params['lat'], $service->lng, $service->lat);
                 if ($distance > 5) {
                     unset($services[$k]);
+                } else {
+                    $services[$k]->distance = $distance;
                 }
             }
         }
