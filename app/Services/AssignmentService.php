@@ -103,7 +103,7 @@ class AssignmentService
                     $assignments[$k]->distance = $distance;
                 }
             }
-            dd($assignments);
+            dd($assignments->items);
             $assignments = array_values($assignments);
         } else {
             $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
