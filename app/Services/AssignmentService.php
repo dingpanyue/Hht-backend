@@ -73,17 +73,22 @@ class AssignmentService
         $params = array_filter($params);
 
         $assignments = $this->assignmentEloqument->with('user')->with('user.userInfo')->where('status', $status)->whereDate('expired_at', '>', date('Y-m-d H:i:s'));
+
         if (isset($params['classification'])) {
             $assignments = $assignments->where('classification', $params['classification']);
         }
+
         if (isset($params['keyword'])) {
             $assignments = $assignments->where('title', 'like', $params['keyword']);
         }
+
         $orderBy = 'created_at';
         $order = 'desc';
+
         if (isset($params['order_by'])) {
             $orderBy = $params['order_by'];
         }
+
         if (isset($params['order'])) {
             $order = $params['order'];
         }
@@ -98,6 +103,7 @@ class AssignmentService
                     $assignments[$k]->distance = $distance;
                 }
             }
+            $assignments = collect($assignments);
         } else {
             $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
         }
