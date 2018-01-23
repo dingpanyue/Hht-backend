@@ -104,7 +104,7 @@ class AssignmentService
                     $assignments[$k]->distance = $distance;
                 }
             }
-            dd($assignments);
+            dd(collect($assignments));
         } else {
             $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
         }
