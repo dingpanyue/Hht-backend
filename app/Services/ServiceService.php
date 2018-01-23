@@ -74,18 +74,23 @@ class ServiceService
             $order = $params['order'];
         }
 
-        $services = $services->orderBy($orderBy, $order)->paginate('20');
-
         if (isset($params['near_by']) && $params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
+            $services = $services->orderBy($orderBy, $order)->get();
+            $nearbyServices = [];
+
             foreach ($services as $k => $service) {
                 $distance = Helper::getDistance($params['lng'], $params['lat'], $service->lng, $service->lat);
-                if ($distance > 5) {
-                    unset($services[$k]);
-                } else {
-                    $services[$k]->distance = $distance;
+
+                if ($distance <= 5) {
+                    $service->distance = $distance;
+                    $nearbyServices[] = $service;
                 }
             }
+            $services = $nearbyServices;
+        } else {
+            $services = $services->orderBy($orderBy, $order)->paginate('20');
         }
+
         return $services;
     }
 
