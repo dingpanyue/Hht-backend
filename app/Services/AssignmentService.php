@@ -95,7 +95,6 @@ class AssignmentService
 
         if (isset($params['near_by']) && $params['near_by'] && isset($params['lng']) && isset($params['lat'])) {
             $assignments = $assignments->orderBy($orderBy, $order)->get();
-//            dd($assignments);
             foreach ($assignments as $k => $assignment) {
                 $distance = Helper::getDistance($params['lng'], $params['lat'], $assignment->lng, $assignment->lat);
                 if ($distance > 5) {
@@ -104,7 +103,7 @@ class AssignmentService
                     $assignments[$k]->distance = $distance;
                 }
             }
-            dd(collect($assignments));
+            $assignments = array_values($assignments);
         } else {
             $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
         }
