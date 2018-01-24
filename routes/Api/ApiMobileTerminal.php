@@ -20,6 +20,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     Route::post('/send-sms', 'RegisterController@sendSmsCode');
     //登录
     Route::post('/login', 'LoginController@login');
+    //Pingpp回调地址
+    Route::post('/notify', 'PayController@notify');
 
     Route::group(['prefix' => 'regions'], function (){
         //省份
