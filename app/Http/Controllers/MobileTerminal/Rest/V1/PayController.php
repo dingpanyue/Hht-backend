@@ -257,7 +257,8 @@ class PayController extends BaseController
         } else {
 
             \Pingpp\Pingpp::setApiKey('sk_live_WznDOCij50iHS4ab9Svf1ev1');
-            \Pingpp\Pingpp::setPrivateKey('MIICWwIBAAKBgQDiTzML9W711UPmHXAqlATBqo/5A1WEn0w7rLiVY5+ldDGzeDhE
+            \Pingpp\Pingpp::setPrivateKey('-----BEGIN RSA PRIVATE KEY-----
+MIICWwIBAAKBgQDiTzML9W711UPmHXAqlATBqo/5A1WEn0w7rLiVY5+ldDGzeDhE
 JNCtNaiCe9P8bkbyTW4gWQRppD+znNL1QQFRNhnpTqmpKdlWzGal/7jNkZCZVyI6
 8FKHQr8FiyNk5J8hTgkB2LIEB8qvPwEP7R+FLh37pxcT3dqARyYyis/iYQIDAQAB
 AoGAcarf89C5g8YzTWBZ1zjzTqaxm5v+Fxe/vXVaXMZmCD9dO0xVznxDR8xcr/Us
@@ -269,7 +270,9 @@ C5c1QwaXT7HiMibBE7acNz/9Ho88w0n9SwJAEniLo3N1kPA5KLlH7SSO5gV/2Tf9
 oWQXKGwl140y6LjjLQ6sKc+2L6JsHvEozVjxFBnhnruKZNzVZ/o9qBFRUQJAI9Kf
 Rci5D5SZXqXUhdp5mHb0VFnuC06Px0UXYbv8CEXUxKvWF85uW3CsMT/0MNJBD/kQ
 42UIIISPx91M+ZI79wJAL4KMuTqpd4l51Suyzfh8TwSzaMJwNVtYscnOFGbWFTb2
-AW8er3nsYHJQo4Nqogp21fgZJ4EKzrS4LUfaoTh7KA==');
+AW8er3nsYHJQo4Nqogp21fgZJ4EKzrS4LUfaoTh7KA==
+-----END RSA PRIVATE KEY-----
+');
             $charge = \Pingpp\Charge::create(array(
                 'order_no' => $order->out_trade_no,
                 'amount' => $order->fee,
