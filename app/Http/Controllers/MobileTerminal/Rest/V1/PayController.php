@@ -255,14 +255,14 @@ class PayController extends BaseController
             }
         } else {
 
-            \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
+            \Pingpp\Pingpp::setApiKey('sk_live_WznDOCij50iHS4ab9Svf1ev1');
             $charge = \Pingpp\Charge::create(array(
                 'order_no' => $order->out_trade_no,
                 'amount' => $order->fee,
                 'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
                 'channel' => $method,
                 'currency' => 'cny',
-                'client_ip' => '127.0.0.1',
+                'client_ip' => '120.132.30.39',
                 'subject' => 'Your Subject',
                 'body' => 'Your Body',
             ));
