@@ -257,6 +257,19 @@ class PayController extends BaseController
         } else {
 
             \Pingpp\Pingpp::setApiKey('sk_live_WznDOCij50iHS4ab9Svf1ev1');
+            \Pingpp\Pingpp::setPrivateKey('MIICWwIBAAKBgQDiTzML9W711UPmHXAqlATBqo/5A1WEn0w7rLiVY5+ldDGzeDhE
+JNCtNaiCe9P8bkbyTW4gWQRppD+znNL1QQFRNhnpTqmpKdlWzGal/7jNkZCZVyI6
+8FKHQr8FiyNk5J8hTgkB2LIEB8qvPwEP7R+FLh37pxcT3dqARyYyis/iYQIDAQAB
+AoGAcarf89C5g8YzTWBZ1zjzTqaxm5v+Fxe/vXVaXMZmCD9dO0xVznxDR8xcr/Us
+G2z0O32Co8KyQbFawYcyOjcFRmfts58c2YKth3yOs+HQ3JBL4o+C1SpqLzu7FYoZ
+hHCqIplVcSP42YuNLxvb+0sU2XtNkNlVmzY7XIHrIqraLyUCQQD9ddJU2y1Cxqbb
+ro+RLaupnbAsKKzigRn4dWavHiYNfyMNZGg6GN7yT4gBkcgssJXs3LcilNuSnKM0
+uYxYR6+DAkEA5JO661ZidaKoBcM2mg79p9SmrZS8D8R1F2A/+hodd5wHVyBYn24y
+C5c1QwaXT7HiMibBE7acNz/9Ho88w0n9SwJAEniLo3N1kPA5KLlH7SSO5gV/2Tf9
+oWQXKGwl140y6LjjLQ6sKc+2L6JsHvEozVjxFBnhnruKZNzVZ/o9qBFRUQJAI9Kf
+Rci5D5SZXqXUhdp5mHb0VFnuC06Px0UXYbv8CEXUxKvWF85uW3CsMT/0MNJBD/kQ
+42UIIISPx91M+ZI79wJAL4KMuTqpd4l51Suyzfh8TwSzaMJwNVtYscnOFGbWFTb2
+AW8er3nsYHJQo4Nqogp21fgZJ4EKzrS4LUfaoTh7KA==');
             $charge = \Pingpp\Charge::create(array(
                 'order_no' => $order->out_trade_no,
                 'amount' => $order->fee,
