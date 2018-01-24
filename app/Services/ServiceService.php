@@ -50,7 +50,7 @@ class ServiceService
     //根据服务id获取服务信息  附带服务产生的acceptedService中等待处理的信息
     public function getServiceDetailById($id)
     {
-        $service = $this->serviceEloqument->with('acceptedServicesCommitted')->with('user')->with('user.userInfo')->find($id);
+        $service = $this->serviceEloqument->with('acceptedServicesCommitted')->with('acceptedServicesCommitted.assignUser')->with('acceptedServicesCommitted.assignUser.userInfo')->with('user')->with('user.userInfo')->find($id);
         return $service;
     }
 
