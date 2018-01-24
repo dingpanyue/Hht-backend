@@ -117,7 +117,7 @@ class AssignmentService
     //获取指定委托
     public function getAssignmentById($assignmentId)
     {
-        $assignment = $this->assignmentEloqument->with('user')->with('acceptedAssignments')->find($assignmentId);
+        $assignment = $this->assignmentEloqument->with('user')->with('acceptedAssignments')->with('acceptedAssignments.serveUser')->with('acceptedAssignments.serveUser.userInfo')->find($assignmentId);
         return $assignment;
     }
 
