@@ -129,6 +129,7 @@ class PayController extends BaseController
 
             //创建订单
             $order = new Order();
+
             $order->user_id = $this->user->id;
             $order->type = $type;
             $order->primary_key = $pk;
