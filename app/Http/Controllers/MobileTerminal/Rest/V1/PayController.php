@@ -603,7 +603,7 @@ class PayController extends BaseController
 
         $amount = $inputs['amount'];
         $method = $inputs['method'];
-        $out_trade_no = time();
+        $out_trade_no = 'Withdrawal'.time();
 
 
         if ($method == 'alipay') {
