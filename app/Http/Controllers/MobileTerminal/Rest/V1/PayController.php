@@ -295,8 +295,7 @@ class PayController extends BaseController
             case "charge.succeeded":
                 // 开发者在此处加入对支付异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
-                dd($event);
-                $data = $event->data;
+                $data = $event->all();
                 $outTradeNo = $data->trade_no;
                 $totalAmount = $data->amount;
                 $method = $data->channel;
