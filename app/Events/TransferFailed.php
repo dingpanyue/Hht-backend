@@ -10,7 +10,7 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 
-class TransferSucceed
+class TransferFailed
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -22,11 +22,10 @@ class TransferSucceed
      *
      * @return void
      */
-    public function __construct($data, $status)
+    public function __construct($data)
     {
         //
         $this->data = $data;
-        $this->status = $status;
     }
 
     /**

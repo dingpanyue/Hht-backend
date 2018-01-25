@@ -28,21 +28,21 @@ class UpdateWithdrawalStatus
      */
     public function handle(TransferSucceed $event)
     {
-        //
         $data = $event->data;
+        $status = $event->status;
 
         $orderNo = $data->order_no;
 
-        $withdrawal = Withdrawal::where('out_trade_no', $orderNo)->first();
+        $withdrawal = Withdrawal::where('out_trade_no', $orderNo)->where('status', Withdrawal::STATUS_PROCESSING)->first();
 
         if (!$withdrawal) {
-            \Log::error('单号为'.$orderNo.'的提现成功 回调时未能找到提现单');
+            \Log::error('单号为'.$orderNo.'的提现 回调时未能找到提现单');
         }
         try {
-            $withdrawal->status = Withdrawal::STATUS_SUCCESS;
+            $withdrawal->status = $status;
             $withdrawal->save();
         } catch (\Exception $e) {
-            \Log::error('单号为'.$orderNo.'的提现成功 回调时未能成功保存提现单状态');
+            \Log::error('单号为'.$orderNo.'的提现 回调时未能成功保存提现单状态');
         }
     }
 }

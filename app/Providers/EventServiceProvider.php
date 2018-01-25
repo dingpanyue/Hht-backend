@@ -13,11 +13,16 @@ class EventServiceProvider extends ServiceProvider
      * @var array
      */
     protected $listen = [
-        'App\Events\Event' => [
-            'App\Listeners\EventListener',
-        ],
+
+        //提现(企业支付) 成功
         'App\Events\TransferSucceed' => [
+            //修改提现单状态
             'App\Listeners\UpdateWithdrawalStatus'
+        ],
+        //提现(企业支付) 失败
+        'App\Events\TransferFailed' => [
+            //帐户余额回滚 + 修改订单状态
+            'App\Listeners\RollbackUserBalance',
         ],
     ];
 
