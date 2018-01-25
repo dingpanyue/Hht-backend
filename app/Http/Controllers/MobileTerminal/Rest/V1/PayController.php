@@ -376,7 +376,7 @@ class PayController extends BaseController
                 // 开发者在此处加入对退款异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
 
-                $data = $event->data;
+                $data = $event->data->object;
                 $refund_id = $data->id;
 
                 /**
@@ -535,10 +535,10 @@ class PayController extends BaseController
 
                     return self::success("退款成功，余额已返回您的账户，委托取消");
                 } else {
-                    $charge_id = $order->charge;
+                    $charge_id = $order->charge_id;
 
-                    \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
-                    \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
+                    \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                    \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
 
                     $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
