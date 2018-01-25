@@ -286,7 +286,9 @@ class PayController extends BaseController
     //异步通知
     public function notify()
     {
+        return file_get_contents("php://input");
         $event = json_decode(file_get_contents("php://input"));
+
         if (!isset($event->type)) {
             header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
             exit("fail");
