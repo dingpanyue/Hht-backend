@@ -295,6 +295,8 @@ class PayController extends BaseController
             header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
             exit("fail");
         }
+
+        //ping++ 收到的各种通知， 为了美观和提高重用性 接下来应该分布到listener里面去
         switch ($event->type) {
             case "charge.succeeded":
                 // 开发者在此处加入对支付异步通知的处理代码
@@ -479,8 +481,6 @@ class PayController extends BaseController
                     \Log::error('[' . $e->getCode() . '] ' . $e->getMessage());
                 }
                 break;
-
-
             default:
                 header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
                 break;
