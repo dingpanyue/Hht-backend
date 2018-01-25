@@ -143,7 +143,7 @@ class PayController extends BaseController
              * @var $acceptedService AcceptedService
              */
             $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($pk);
-            $title = $acceptedService->service->title();
+            $title = $acceptedService->service->title;
 
             if (!$acceptedService) {
                 return self::resourceNotFound();
