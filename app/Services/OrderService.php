@@ -21,7 +21,7 @@ class OrderService
 
     public function getOrderByOutTradeNo($outTradeNo)
     {
-        $order = $this->orderEloqument->where('out_trade_no', $outTradeNo)->get();
+        $order = $this->orderEloqument->where('out_trade_no', $outTradeNo)->first();
 
         if (!$order) {
             throw new NotFoundHttpException();
