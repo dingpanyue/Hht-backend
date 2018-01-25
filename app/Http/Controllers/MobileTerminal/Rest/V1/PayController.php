@@ -724,7 +724,6 @@ class PayController extends BaseController
     {
         //获取提现用户
         $user = $this->user;
-        dd($user);
         $userInfo = $user->userInfo;
         $userAccount = $user->userAccount;
         $balance = $userInfo->balance;
