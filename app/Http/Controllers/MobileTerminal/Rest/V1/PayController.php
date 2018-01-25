@@ -298,7 +298,7 @@ class PayController extends BaseController
                 // 开发者在此处加入对支付异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
                 $data = $event->all();
-                $outTradeNo = $data->trade_no;
+                $outTradeNo = $data->order_no;
                 $totalAmount = $data->amount;
                 $method = $data->channel;
 
