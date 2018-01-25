@@ -713,6 +713,53 @@ class PayController extends BaseController
 //        }
 //    }
 
-     //Pingpp 提现接口
+    //Pingpp 提现接口
+    public function withdrawals(Request $request)
+    {
+        //获取提现用户
+        $user = $this->user;
+        $userInfo = $user->userInfo;
+        $userAccount = $user->userAccount;
+        $balance = $userInfo->balance;
+        $inputs = $request->only('method', 'amount');
 
+        $validator = app('validator')->make($inputs, [
+            'method' => 'required|in:alipay,ws',
+            'amount' => 'required|numeric|min:0'
+        ], [
+            'method.required' => '提现方式必须填写',
+            'method.in' => '提现方式只能为微信或者支付宝',
+            'amount.required' => '提现数额必须填写',
+            'amount.numeric' => '提现数量必须为数字',
+            'amount.min' => '提现金额必须大于0'
+        ]);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        if ($balance < $inputs['amount']) {
+            return self::error(self::CODE_BALANCE_NOTE_ENOUGH, '帐户余额不足');
+        }
+
+        $amount = $inputs['amount'];
+        $method = $inputs['method'];
+        $out_trade_no = time();
+
+        \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+        \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
+
+        \Pingpp\Transfer::create(
+            array(
+                'order_no'    => $out_trade_no,
+                'app'         => array('id' => 'app_f5OCi9P80q1OnXL4' ),
+                'channel'     => $method,
+                'amount'      => $amount,
+                'currency'    => 'cny',
+                'type'        => 'b2c',
+                'recipient'   => '15996518059',
+                'description' => '提现啦'
+            )
+        );
+    }
 }
