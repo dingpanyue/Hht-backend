@@ -95,6 +95,20 @@ class ServiceController extends BaseController
         return self::success(AcceptedServiceTransformer::transformList($acceptedServices, false));
     }
 
+    //获取我的  被确认  或者购买了的所有服务列表
+    public function myBoughtServices(Request $request)
+    {
+        $user = $this->user;
+        $inputs = $request->all();
+
+        if (isset($inputs['status'])) {
+            $acceptedServices = $this->acceptedServiceService->getAcceptedServicesByServeUser($user, $inputs['status']);
+        } else {
+            $acceptedServices = $this->acceptedServiceService->getAcceptedServicesByServeUser($user);
+        }
+        return self::success(AcceptedServiceTransformer::transformList($acceptedServices, false));
+    }
+
     //发布服务 服务没有deadline 由购买服务的人来决定（因为service好比队列任务，自己不应该决定什么时候完成，也就说会有单个服务很快能完成，但手头大量积压的情况）   reward根据情况可填也可不填
     public function publishService(Request $request)
     {

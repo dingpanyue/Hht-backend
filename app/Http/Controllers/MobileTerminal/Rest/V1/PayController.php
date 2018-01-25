@@ -754,12 +754,15 @@ class PayController extends BaseController
                 'order_no'    => $out_trade_no,
                 'app'         => array('id' => 'app_f5OCi9P80q1OnXL4' ),
                 'channel'     => $method,
-                'amount'      => $amount,
+                'amount'      => $amount*100,
                 'currency'    => 'cny',
                 'type'        => 'b2c',
-                'recipient'   => '15996518059',
+                'recipient'   => $userAccount->alipay,
                 'description' => '提现啦'
             )
         );
+
+        return self::success("提现请求提交成功，请耐心等待");
+
     }
 }

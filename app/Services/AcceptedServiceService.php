@@ -49,6 +49,18 @@ class AcceptedServiceService
         return $acceptedServices;
     }
 
+    public function getAcceptedServicesByServeUser(User $user, $status = 'all')
+    {
+        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('serve_user_id', $user->id)->orderBy('status', 'asc');
+
+        if ($status != 'all') {
+            $acceptedServices = $acceptedServices->where('status', $status);
+        }
+
+        $acceptedServices = $acceptedServices->get();
+        return $acceptedServices;
+    }
+
     public function getServiceOperationLog(AcceptedService $acceptedService)
     {
         $operations = $this->operationLogService->getServiceOperationLogs($acceptedService);

@@ -129,6 +129,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/services', ['as' => '', 'uses' => 'ServiceController@myServices']);
         //获取作为委托人购买的所有服务
         Route::get('/accepted_services', ['as' => '', 'uses' => 'ServiceController@myAcceptedServices']);
+        //获取我所有被申请购买之后的服务
+        Route::get('/bought_services', ['as' => '', 'uses' => 'ServiceController@myBoughtServices']);
         //修改/设置用户支付宝账户
         Route::post('/alipay_account' , ['as' => '', 'uses' => 'UserController@setUserAlipayAccount']);
         //设置用户支付密码
