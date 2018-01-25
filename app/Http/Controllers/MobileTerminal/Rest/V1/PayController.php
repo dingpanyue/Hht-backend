@@ -26,6 +26,7 @@ use App\Services\ServiceService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use lyt8384\Pingpp\Facades\Pingpp;
+use Mockery\Exception;
 use Yansongda\Pay\Gateways\Alipay\Alipay;
 use Yansongda\Pay\Pay;
 use Illuminate\Http\Request;
@@ -458,6 +459,11 @@ class PayController extends BaseController
                     }
                 }
                 break;
+            case "transfer.succeeded":
+                header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
+                $data = $event->data->object;
+
+                break;
             default:
                 header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');
                 break;
@@ -746,23 +752,64 @@ class PayController extends BaseController
         $method = $inputs['method'];
         $out_trade_no = time();
 
-        \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
-        \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
 
-        \Pingpp\Transfer::create(
-            array(
-                'order_no'    => $out_trade_no,
-                'app'         => array('id' => 'app_f5OCi9P80q1OnXL4' ),
-                'channel'     => $method,
-                'amount'      => $amount*100,
-                'currency'    => 'cny',
-                'type'        => 'b2c',
-                'recipient'   => $userAccount->alipay,
-                'description' => '提现啦'
-            )
-        );
+        if ($method == 'alipay') {
+            //必须有支付宝账户
+            if (!($userAccount && $userAccount->alipay)) {
+                return self::notAllowed('您尚没有在账户中填写支付宝账户，无法提现到支付宝');
+            }
+        }
+
+        if ($method == 'wx') {
+            //必须有微信openid
+            if (!($userAccount && $userAccount->alipay)) {
+                return self::notAllowed('您尚没有给微信进行授权，无法提现到微信');
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($userInfo, $amount, $method, $out_trade_no, $userAccount) {
+
+                //创建withdrawl
+                $withdrawal = new Withdrawal();
+                $withdrawal->method = $method;
+                $withdrawal->fee = $amount;
+                $withdrawal->out_trade_no = $out_trade_no;
+                $withdrawal->user_id = $userInfo->user_id;
+                $withdrawal->status = Withdrawal::STATUS_PROCESSING;
+                $withdrawal->save();
+
+                //扣除余额
+                $balance = UserInfo::where('id', $userInfo->id)->pluck('balance');
+                $originBalance = $balance[0];
+                $finalBalance = $originBalance - $amount;
+
+                if ($finalBalance < 0) {
+                    throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH,self::CODE_BALANCE_NOTE_ENOUGH);
+                }
+
+                $userInfo->balance = $finalBalance;
+                $userInfo->save();
+
+                \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
+                \Pingpp\Transfer::create(
+                    array(
+                        'order_no' => $out_trade_no,
+                        'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
+                        'channel' => $method,
+                        'amount' => $amount*100,
+                        'currency' => 'cny',
+                        'type' => 'b2c',
+                        'recipient' => $userAccount->alipay,
+                        'description' => '行行通感谢您的使用'
+                    )
+                );
+            });
+        } catch (\Exception $e) {
+            return self::error($e->getCode(), $e->getMessage());
+        }
 
         return self::success("提现请求提交成功，请耐心等待");
-
     }
 }

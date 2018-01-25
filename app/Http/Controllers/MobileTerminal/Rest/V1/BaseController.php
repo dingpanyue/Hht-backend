@@ -52,6 +52,7 @@ class BaseController extends Controller
     const CODE_FAIL_TO_CREATE_ADDRESS = 200500;                   //创建地址失败
 
     const CODE_BALANCE_NOTE_ENOUGH = 206000;                    //账户余额不足
+    const MESSAGE_BALANCE_NOT_ENGOUGH = "账户余额不足";
 
 
 
