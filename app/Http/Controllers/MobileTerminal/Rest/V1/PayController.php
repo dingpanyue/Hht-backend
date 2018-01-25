@@ -542,16 +542,12 @@ class PayController extends BaseController
 
                     $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
-                    //todo 扣除支付的手续费
                     $refund = $ch->refunds->create(
                         array(
                             'amount' => $order->fee,
                             'description' => 'Refund Description'
                         )
                     );
-
-                    //todo 判断refund 对象
-
 
                     //把委托状态改为退款中   将退款id 写入order
                     DB::transaction(function () use ($order, $assignment, $refund) {
@@ -561,6 +557,8 @@ class PayController extends BaseController
                         $order->refund_id = $refund->id;
                         $order->save();
                     });
+
+                    return self::success("退款申请提交成功，您的退款正在处理中");
                 }
             }
         }
