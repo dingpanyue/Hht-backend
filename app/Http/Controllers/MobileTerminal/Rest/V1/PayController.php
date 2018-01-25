@@ -8,6 +8,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
  * Date: 2017/12/3
  * Time: 3:36
  */
+use App\Events\TransferSucceed;
 use App\Models\AcceptedService;
 use App\Models\Assignment;
 use App\Models\OperationLog;
@@ -462,7 +463,11 @@ class PayController extends BaseController
             case "transfer.succeeded":
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
                 $data = $event->data->object;
-
+                try {
+                    event(new TransferSucceed($data));
+                } catch (\Exception $e) {
+                    \Log::error('[' . $e->getCode() . '] ' . $e->getMessage());
+                }
                 break;
             default:
                 header($_SERVER['SERVER_PROTOCOL'] . ' 400 Bad Request');

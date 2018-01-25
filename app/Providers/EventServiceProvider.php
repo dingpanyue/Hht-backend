@@ -17,7 +17,7 @@ class EventServiceProvider extends ServiceProvider
             'App\Listeners\EventListener',
         ],
         'App\Events\TransferSucceed' => [
-            'App\Listeners\DeductUserBalance'
+            'App\Listeners\UpdateWithdrawalStatus'
         ],
     ];
 
