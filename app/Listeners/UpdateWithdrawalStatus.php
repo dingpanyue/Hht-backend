@@ -45,7 +45,6 @@ class UpdateWithdrawalStatus
         } catch (\Exception $e) {
             \Log::error('单号为'.$orderNo.'的提现 回调时未能成功保存提现单状态');
         }
-        throw new \Exception();
         GatewayWorkerService::sendSystemMessage("您提现的金额 $withdrawal->fee 元已经到帐", $withdrawal->user_id);
     }
 }
