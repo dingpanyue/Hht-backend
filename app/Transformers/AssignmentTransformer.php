@@ -24,6 +24,10 @@ class AssignmentTransformer
             Assignment::STATUS_REFUNDING => '退款中'
         ];
 
+        if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
+            $assignment->apply_count = count($assignment->accepted_assignments);
+        }
+
         $assignment->classification = $classifications[$assignment->classification];
         $assignment->status = $statuses[$assignment->status];
 
@@ -35,9 +39,7 @@ class AssignmentTransformer
             $assignment->operations = OperationLogTransformer::transformList($assignment->operations);
         }
 
-        if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
-            $assignment->apply_count = count($assignment->accepted_assignments);
-        }
+
 
         return $assignment;
     }
