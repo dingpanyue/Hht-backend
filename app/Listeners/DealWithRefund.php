@@ -101,7 +101,7 @@ class DealWithRefund
                         $order->status = Order::STATUS_REFUNDED;
                         $order->save();
 
-                        $acceptedService->status = Assignment::STATUS_FAILED;
+                        $acceptedService->status = AcceptedService::STATUS_FAILED;
                         $acceptedService->save();
 
                         //添加操作日志
