@@ -36,7 +36,7 @@ class AssignmentTransformer
         }
 
         if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
-            $assignment->applyCount = count($assignment->acceptedAssignments);
+            $assignment->apply_count = count($assignment->accepted_assignments);
         }
 
         return $assignment;
