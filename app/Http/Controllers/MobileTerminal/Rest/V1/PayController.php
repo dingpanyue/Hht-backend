@@ -364,7 +364,6 @@ class PayController extends BaseController
             case "refund.succeeded":
                 // 开发者在此处加入对退款异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
-
                 $data = $event->data->object;
                 try {
                     event(new RefundSucceed($data));
@@ -384,6 +383,7 @@ class PayController extends BaseController
                     throw new InternalErrorException();
                 }
                 break;
+
             case "transfer.failed":
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
                 $data = $event->data->object;
