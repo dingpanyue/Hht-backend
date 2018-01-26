@@ -69,4 +69,9 @@ class Assignment extends Model
     {
         return $this->hasMany(AcceptedAssignment::class, 'parent_id', 'id');
     }
+
+    public function acceptedAssignment()
+    {
+        return $this->hasOne(AcceptedAssignment::class, 'id', 'accepted_assignment_id');
+    }
 }

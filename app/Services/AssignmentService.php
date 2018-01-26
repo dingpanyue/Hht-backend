@@ -360,7 +360,7 @@ class AssignmentService
     public function getAssignmentsByUser(User $user, $status = 'all')
     {
         //自己发布的委托
-        $assignments = $this->assignmentEloqument->with('acceptedAssignments')->where('user_id', $user->id)->orderBy('status', 'asc');
+        $assignments = $this->assignmentEloqument->with('acceptedAssignments')->with('acceptedAssignment')->where('user_id', $user->id)->orderBy('status', 'asc');
 
         if ($status != 'all') {
             $assignments->where('status', $status);
