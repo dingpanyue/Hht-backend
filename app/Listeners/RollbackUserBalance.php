@@ -39,6 +39,7 @@ class RollbackUserBalance
 
         if (!$withdrawal) {
             \Log::error('单号为'.$orderNo.'的提现 回调时未能找到提现单');
+            throw new \Exception();
         }
 
         $amount = $withdrawal->fee;
