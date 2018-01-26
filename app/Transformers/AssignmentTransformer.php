@@ -14,6 +14,7 @@ class AssignmentTransformer
     public  static function transform(Assignment $assignment)
     {
         $classifications = Helper::transformToKeyValue(app('assignment_classifications'), 'id', 'name');
+
         $statuses = [
             Assignment::STATUS_UNPAID => '未支付',
             Assignment::STATUS_WAIT_ACCEPT => '待接受',
@@ -37,6 +38,10 @@ class AssignmentTransformer
 
         if ($assignment->operations) {
             $assignment->operations = OperationLogTransformer::transformList($assignment->operations);
+        }
+
+        if ($assignment->adaptedAssignment) {
+            $assignment->adapted_assignment = AcceptedAssignmentTransformer::transform($assignment->adaptedAssignment, false);
         }
 
 
