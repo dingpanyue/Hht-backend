@@ -74,4 +74,13 @@ class Assignment extends Model
     {
         return $this->hasOne(AcceptedAssignment::class, 'id', 'adapted_assignment_id');
     }
+
+    public function applyUserCount()
+    {
+        if ($this->status == self::STATUS_WAIT_ACCEPT) {
+            return $this->hasMany(AcceptedAssignment::class, 'parent_id', 'id')->count();
+        } else {
+            return 0;
+        }
+    }
 }
