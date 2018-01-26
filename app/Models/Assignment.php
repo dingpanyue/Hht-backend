@@ -70,8 +70,8 @@ class Assignment extends Model
         return $this->hasMany(AcceptedAssignment::class, 'parent_id', 'id');
     }
 
-    public function acceptedAssignment()
+    public function adaptedAssignment()
     {
-        return $this->hasOne(AcceptedAssignment::class, 'id', 'accepted_assignment_id');
+        return $this->hasOne(AcceptedAssignment::class, 'id', 'adapted_assignment_id');
     }
 }
