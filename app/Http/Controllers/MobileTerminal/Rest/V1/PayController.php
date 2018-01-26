@@ -8,6 +8,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
  * Date: 2017/12/3
  * Time: 3:36
  */
+use App\Events\RefundSucceed;
 use App\Events\TransferFailed;
 use App\Events\TransferSucceed;
 use App\Models\AcceptedService;
@@ -15,7 +16,6 @@ use App\Models\Assignment;
 use App\Models\OperationLog;
 use App\Models\Order;
 use App\Models\TimedTask;
-use App\Models\User;
 use App\Models\UserInfo;
 use App\Models\Withdrawal;
 use App\Services\AcceptedServiceService;
@@ -24,14 +24,9 @@ use App\Services\FlowLogService;
 use App\Services\GatewayWorkerService;
 use App\Services\OperationLogService;
 use App\Services\OrderService;
-use App\Services\ServiceService;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
-use lyt8384\Pingpp\Facades\Pingpp;
-use Mockery\Exception;
-use Yansongda\Pay\Gateways\Alipay\Alipay;
-use Yansongda\Pay\Pay;
 use Illuminate\Http\Request;
+use Symfony\Component\CssSelector\Exception\InternalErrorException;
 
 class PayController extends BaseController
 {
@@ -60,16 +55,6 @@ class PayController extends BaseController
         parent::__construct();
     }
 
-    //支付宝支付参数,由于换成了ping++
-//    protected $config = [
-//        'alipay' => [
-//            'app_id' => '2017072807930919',
-//            'notify_url' => 'http://yansongda.cn/alipay_notify.php',
-//            'return_url' => 'http://yansongda.cn/return.php',
-//            'ali_public_key' => 'MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQC3ktzC/yM+nbs67uWfMZ2hc31gIXLOZ9I0IH/q7L9/PduneT98eTa8o6uoWqxLwW5pb9D5aGU/yICNZxDLNdfjAsvrCaA2f0BkqYkxgdd4FTM7Er6qz/eR/RiPLVRyVbrSz3IcE9P5PQOa4UKiWjcLPvjJPxGcBs6G3Oh8riSpoQIDAQAB',
-//            'private_key' => 'MIICXQIBAAKBgQC3ktzC/yM+nbs67uWfMZ2hc31gIXLOZ9I0IH/q7L9/PduneT98eTa8o6uoWqxLwW5pb9D5aGU/yICNZxDLNdfjAsvrCaA2f0BkqYkxgdd4FTM7Er6qz/eR/RiPLVRyVbrSz3IcE9P5PQOa4UKiWjcLPvjJPxGcBs6G3Oh8riSpoQIDAQABAoGAS2p+X23J4POT88Ypd5k+lRGJNHEJZVqptNiVNMJGedPD5a2eM1jo796dqvB1UDoLTi2twIju76FDjtQExjc8lUh1wyma//N4cxnqA0dfRpxnrdHYXZ8BwuyAH0ZqdpjALzwFgNXRSHHaA+3PMsgTGjLLHoUKYd0HWTvePZRLyEECQQDZS+tUqoH+qXdYbBcoCx9R/bTYRbLqJIbHJ3M4JdceSPIkfNC3/gW/QIORCCWCvtfu6u136nNXFoJzhaYDYoO1AkEA2EVHjqPX4zSMnVI5QifMFOHUo08F5lzbYboT3uDRua5tHyRVQPbdvp95qxj5mMX0znaWvx6S6wnrNAfjTtHZvQJATqqrgbVQ5o8Xg81t/LM6HYbJ59oj0ZxzprnjfppEbNRfxVHihhnSntCOUP0wB0tsBTTLz7PzGb4ucAAcf/E0WQJBAIi1SmVlNmud5SDxP9aMt5mfoz1UD4OtwNOGv1bMwGXiV4IvAmEda9A6mLtJ/0TOJVB5cBMBrZc7Xt01+z7wsfUCQQC6KyDoKnSdXOJFai7fl96OmnZGBt1V9Q7WohlOJHaUJZ5T9RTSM3IC71momjReS9TtUQ2zbebc+e9oDk5RHfIg',
-//        ],
-//    ];
 
     /**
      * @param $method  string  支付方式 可选 ali wechat
@@ -100,8 +85,6 @@ class PayController extends BaseController
         $method = $input['method'];
         $type = $input['type'];
         $pk = $input['pk'];
-
-        $globalConfigs = app('global_configs');
 
         if (!in_array($method, [Order::ALIPAY, Order::WX, Order::UPACP, Order::BALANCE])) {
             return self::parametersIllegal();
@@ -265,7 +248,7 @@ class PayController extends BaseController
             \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
             $charge = \Pingpp\Charge::create(array(
                 'order_no' => $order->out_trade_no,
-                'amount' => $order->fee,
+                'amount' => $order->fee*100,
                 'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
                 'channel' => $method,
                 'currency' => 'cny',
@@ -377,92 +360,20 @@ class PayController extends BaseController
                     }
                 });
                 break;
+
             case "refund.succeeded":
                 // 开发者在此处加入对退款异步通知的处理代码
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
 
                 $data = $event->data->object;
-                $refund_id = $data->id;
-
-                /**
-                 * @var $order Order
-                 */
-                if ($data->succeed == true) {
-                    $order = Order::where('refund_id', $refund_id)->first();
-
-                    if ($order->type == Order::TYPE_ASSIGNMENT) {
-                        /**
-                         * @var $assignment Assignment
-                         */
-                        $assignment = Assignment::where('id', $order->primary_key)->first();
-
-                        if ($assignment->status == Assignment::STATUS_REFUNDING) {
-                            DB::transaction(function () use ($order, $assignment) {
-                                $order->status = Order::STATUS_REFUNDED;
-                                $order->save();
-
-                                $assignment->status = Assignment::STATUS_FAILED;
-                                $assignment->save();
-
-                                //添加操作日志
-                                $this->operationLogService->log(
-                                    OperationLog::OPERATION_REFUND,
-                                    OperationLog::TABLE_ASSIGNMENTS,
-                                    $assignment->id,
-                                    $assignment->user_id,
-                                    OperationLog::STATUS_REFUNDING,
-                                    OperationLog::STATUS_FAILED
-                                );
-
-                                //流水日志 负数
-                                $this->flowLogService->log(
-                                    $assignment->user_id,
-                                    'orders',
-                                    $order->method,
-                                    $order->id,
-                                    -$order->fee
-                                );
-                            });
-                            $message = "您发布的委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
-                            GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
-                        }
-                    }
-
-                    if ($order->type == Order::TYPE_SERVICE) {
-
-                        $acceptedService = AcceptedService::where('id', $order->primary_key)->first();
-                        DB::transaction(function () use ($order, $acceptedService) {
-
-                            $order->status = Order::STATUS_REFUNDED;
-                            $order->save();
-
-                            $acceptedService->status = Assignment::STATUS_FAILED;
-                            $acceptedService->save();
-
-                            //添加操作日志
-                            $this->operationLogService->log(
-                                OperationLog::OPERATION_REFUND,
-                                OperationLog::TABLE_ACCEPTED_SERVICES,
-                                $acceptedService->id,
-                                0,
-                                OperationLog::STATUS_REFUNDING,
-                                OperationLog::STATUS_FAILED
-                            );
-
-                            //流水日志 负数
-                            $this->flowLogService->log(
-                                $acceptedService->assign_user_id,
-                                'orders',
-                                $order->method,
-                                $order->id,
-                                -$order->fee
-                            );
-                        });
-                        $message = "您购买的服务的退款已处理成功，退款打入您的支付账户，委托取消";
-                        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
-                    }
+                try {
+                    event(new RefundSucceed($data));
+                } catch (\Exception $e) {
+                    \Log::error('[' . $e->getCode() . '] ' . $e->getMessage());
+                    throw new InternalErrorException();
                 }
                 break;
+
             case "transfer.succeeded":
                 header($_SERVER['SERVER_PROTOCOL'] . ' 200 OK');
                 $data = $event->data->object;
@@ -470,6 +381,7 @@ class PayController extends BaseController
                     event(new TransferSucceed($data, Withdrawal::STATUS_SUCCESS));
                 } catch (\Exception $e) {
                     \Log::error('[' . $e->getCode() . '] ' . $e->getMessage());
+                    throw new InternalErrorException();
                 }
                 break;
             case "transfer.failed":

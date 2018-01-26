@@ -24,6 +24,12 @@ class EventServiceProvider extends ServiceProvider
             //帐户余额回滚 + 修改订单状态
             'App\Listeners\RollbackUserBalance',
         ],
+        //退款成功
+        'App\Events\RefundSucceed' => [
+            //处理退款
+            'App\Listeners\DealWithRefund'
+        ],
+
     ];
 
     /**
