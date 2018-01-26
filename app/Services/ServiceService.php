@@ -20,11 +20,13 @@ class ServiceService
 {
     protected $serviceEloqument;
     protected $operationLogService;
+    protected $flowLogService;
 
-    public function __construct(Service $service, OperationLogService $operationLogService)
+    public function __construct(Service $service, OperationLogService $operationLogService, FlowLogService $flowLogService)
     {
         $this->serviceEloqument = $service;
         $this->operationLogService = $operationLogService;
+        $this->flowLogService = $flowLogService;
     }
 
     //获取指定服务 简略
