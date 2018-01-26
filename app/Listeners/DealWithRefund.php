@@ -64,7 +64,6 @@ class DealWithRefund
 
                         $assignment->status = Assignment::STATUS_FAILED;
                         $assignment->save();
-                        aa
                         //添加操作日志
                         $this->operationLogService->log(
                             OperationLog::OPERATION_REFUND,
