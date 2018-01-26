@@ -34,6 +34,11 @@ class AssignmentTransformer
         if ($assignment->operations) {
             $assignment->operations = OperationLogTransformer::transformList($assignment->operations);
         }
+
+        if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
+            $assignment->applyCount = count($assignment->acceptedAssignments);
+        }
+
         return $assignment;
     }
 
