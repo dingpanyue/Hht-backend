@@ -401,7 +401,7 @@ class PayController extends BaseController
         return;
     }
 
-    //退款
+    //退款           只有未接受的委托允许主动退款
     public function refund($type, $pk)
     {
         $user = $this->user;
@@ -429,6 +429,7 @@ class PayController extends BaseController
             if (!$order) {
                 return self::error(self::CODE_ORDER_STATUS_ABNORMAL, '订单状态异常，无法完成退款');
             } else {
+                //处理余额退款
                 if ($order->method == Order::BALANCE) {
                     DB::transaction(function () use ($order, $user, $assignment) {
 
@@ -478,12 +479,16 @@ class PayController extends BaseController
 
                     $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
-                    $refund = $ch->refunds->create(
-                        array(
-                            'amount' => $order->fee,
-                            'description' => 'Refund Description'
-                        )
-                    );
+                    try {
+                        $refund = $ch->refunds->create(
+                            array(
+                                'amount' => $order->fee * 100,
+                                'description' => 'Refund Description'
+                            )
+                        );
+                    } catch (\Exception $e) {
+                        return self::error($e->getCode(), $e->getMessage());
+                    }
 
                     //把委托状态改为退款中   将退款id 写入order
                     DB::transaction(function () use ($order, $assignment, $refund) {

@@ -119,15 +119,16 @@ class Expire extends Command
 
                     $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
-                    //todo 扣除支付的手续费
-                    $refund = $ch->refunds->create(
-                        array(
-                            'amount' => $order->fee,
-                            'description' => 'Refund Description'
-                        )
-                    );
-
-                    //todo 判断refund 对象
+                    try {
+                        $refund = $ch->refunds->create(
+                            array(
+                                'amount' => $order->fee * 100,
+                                'description' => 'Refund Description'
+                            )
+                        );
+                    } catch (\Exception $e) {
+                        \Log::error($e->getCode(), $e->getMessage());
+                    }
 
                     //把委托状态改为退款中   将退款id 写入order
                     DB::transaction(function () use ($order, $assignment, $refund) {
