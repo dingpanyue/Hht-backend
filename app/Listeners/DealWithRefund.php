@@ -13,6 +13,7 @@ use App\Services\OperationLogService;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Facades\DB;
+use Mockery\Exception;
 
 class DealWithRefund
 {
@@ -35,14 +36,13 @@ class DealWithRefund
     /**
      * Handle the event.
      *
-     * @param  RefundSucceed  $event
+     * @param  RefundSucceed $event
      * @return void
      */
     public function handle(RefundSucceed $event)
     {
         //
         $data = $event->data;
-
         $refund_id = $data->id;
 
         /**
@@ -58,66 +58,74 @@ class DealWithRefund
                 $assignment = Assignment::where('id', $order->primary_key)->first();
 
                 if ($assignment->status == Assignment::STATUS_REFUNDING) {
-                    DB::transaction(function () use ($order, $assignment) {
-                        $order->status = Order::STATUS_REFUNDED;
-                        $order->save();
+                    try {
+                        DB::transaction(function () use ($order, $assignment) {
+                            $order->status = Order::STATUS_REFUNDED;
+                            $order->save();
 
-                        $assignment->status = Assignment::STATUS_FAILED;
-                        $assignment->save();
-                        //添加操作日志
-                        $this->operationLogService->log(
-                            OperationLog::OPERATION_REFUND,
-                            OperationLog::TABLE_ASSIGNMENTS,
-                            $assignment->id,
-                            $assignment->user_id,
-                            OperationLog::STATUS_REFUNDING,
-                            OperationLog::STATUS_FAILED
-                        );
+                            $assignment->status = Assignment::STATUS_FAILED;
+                            $assignment->save();
 
-                        //流水日志 负数
-                        $this->flowLogService->log(
-                            $assignment->user_id,
-                            'orders',
-                            $order->method,
-                            $order->id,
-                            -$order->fee
-                        );
-                    });
+                            //添加操作日志
+                            $this->operationLogService->log(
+                                OperationLog::OPERATION_REFUND,
+                                OperationLog::TABLE_ASSIGNMENTS,
+                                $assignment->id,
+                                $assignment->user_id,
+                                OperationLog::STATUS_REFUNDING,
+                                OperationLog::STATUS_FAILED
+                            );
+
+                            //流水日志 负数
+                            $this->flowLogService->log(
+                                $assignment->user_id,
+                                'orders',
+                                $order->method,
+                                $order->id,
+                                -$order->fee
+                            );
+                        });
+                    } catch (\Exception $e) {
+                        throw $e;
+                    }
                     $message = "您发布的委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
                     GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
                 }
             }
 
             if ($order->type == Order::TYPE_SERVICE) {
-
                 $acceptedService = AcceptedService::where('id', $order->primary_key)->first();
-                DB::transaction(function () use ($order, $acceptedService) {
+                try {
+                    DB::transaction(function () use ($order, $acceptedService) {
 
-                    $order->status = Order::STATUS_REFUNDED;
-                    $order->save();
+                        $order->status = Order::STATUS_REFUNDED;
+                        $order->save();
 
-                    $acceptedService->status = Assignment::STATUS_FAILED;
-                    $acceptedService->save();
+                        $acceptedService->status = Assignment::STATUS_FAILED;
+                        $acceptedService->save();
 
-                    //添加操作日志
-                    $this->operationLogService->log(
-                        OperationLog::OPERATION_REFUND,
-                        OperationLog::TABLE_ACCEPTED_SERVICES,
-                        $acceptedService->id,
-                        0,
-                        OperationLog::STATUS_REFUNDING,
-                        OperationLog::STATUS_FAILED
-                    );
+                        //添加操作日志
+                        $this->operationLogService->log(
+                            OperationLog::OPERATION_REFUND,
+                            OperationLog::TABLE_ACCEPTED_SERVICES,
+                            $acceptedService->id,
+                            0,
+                            OperationLog::STATUS_REFUNDING,
+                            OperationLog::STATUS_FAILED
+                        );
 
-                    //流水日志 负数
-                    $this->flowLogService->log(
-                        $acceptedService->assign_user_id,
-                        'orders',
-                        $order->method,
-                        $order->id,
-                        -$order->fee
-                    );
-                });
+                        //流水日志 负数
+                        $this->flowLogService->log(
+                            $acceptedService->assign_user_id,
+                            'orders',
+                            $order->method,
+                            $order->id,
+                            -$order->fee
+                        );
+                    });
+                }catch (\Exception $e) {
+                    throw $e;
+                }
                 $message = "您购买的服务的退款已处理成功，退款打入您的支付账户，委托取消";
                 GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
             }
