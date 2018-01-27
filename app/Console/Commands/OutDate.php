@@ -135,8 +135,8 @@ class OutDate extends Command
                     } else {
                         $charge_id = $order->charge_id;
 
-                        \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
-                        \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
+                        \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                        \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
 
                         $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
@@ -302,8 +302,8 @@ class OutDate extends Command
                     } else {
                         $charge_id = $order->charge_id;
 
-                        \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
-                        \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
+                        \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                        \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
 
                         $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
