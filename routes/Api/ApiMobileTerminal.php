@@ -32,6 +32,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/{city_id}/areas', ['as' => 'Areas', 'uses' => 'RegionController@areas']);
     });
 
+    Route::get('/test_notify', 'UserController@systemMessage');
+
     //委托接口
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
         //获取所有委托的类目

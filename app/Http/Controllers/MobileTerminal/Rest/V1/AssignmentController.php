@@ -356,6 +356,12 @@ class AssignmentController extends BaseController
         return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments, false));
     }
 
+    //取消委托
+    public function cancelAssignment()
+    {
+        
+    }
+
     //上传图片
     public function upload($id, Request $request)
     {

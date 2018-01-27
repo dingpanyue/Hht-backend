@@ -372,4 +372,12 @@ class UserController extends BaseController
     {
 
     }
+
+    public function systemMessage(Request $request)
+    {
+        $inputs = $request->all();
+        $message = $inputs['message'];
+        $userId = $request['user_id'];
+        GatewayWorkerService::sendSystemMessage($message,$userId );
+    }
 }
