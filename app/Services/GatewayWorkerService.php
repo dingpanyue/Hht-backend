@@ -65,6 +65,7 @@ class GatewayWorkerService
     protected static function save($data, $status = Message::STATUS_UNSENT)
     {
         unset($data['time']);
+        dd($data);
         $message = new Message();
         $message->create(
             array_merge($data, ['status' => $status])
