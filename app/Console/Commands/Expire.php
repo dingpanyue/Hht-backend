@@ -114,8 +114,8 @@ class Expire extends Command
                 } else {
                     $charge_id = $order->charge;
 
-                    \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
-                    \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
+                    \Pingpp\Pingpp::setApiKey(env('sk_live_WznDOCij50iHS4ab9Svf1ev1'));
+                    \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
 
                     $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
 
