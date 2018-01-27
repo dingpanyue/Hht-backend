@@ -88,7 +88,7 @@ class DealWithRefund
                     } catch (\Exception $e) {
                         throw $e;
                     }
-                    $message = "您发布的委托 $assignment->title 的退款申请已处理成功，退款打入您的支付账户，委托取消";
+                    $message = "您发布的委托 $assignment->title 的退款已处理成功，退款打入您的支付账户，委托取消";
                     GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
                 }
             }
