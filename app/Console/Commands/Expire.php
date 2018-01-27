@@ -112,7 +112,7 @@ class Expire extends Command
                     GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
                 } else {
-                    $charge_id = $order->charge;
+                    $charge_id = $order->charge_id;
 
                     \Pingpp\Pingpp::setApiKey(env('sk_live_WznDOCij50iHS4ab9Svf1ev1'));
                     \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));

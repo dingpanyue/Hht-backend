@@ -133,7 +133,7 @@ class OutDate extends Command
                         GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->assign_user_id);
 
                     } else {
-                        $charge_id = $order->charge;
+                        $charge_id = $order->charge_id;
 
                         \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
                         \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
@@ -300,7 +300,7 @@ class OutDate extends Command
                         GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
 
                     } else {
-                        $charge_id = $order->charge;
+                        $charge_id = $order->charge_id;
 
                         \Pingpp\Pingpp::setApiKey('sk_test_KqTiHGvrnvPSnnPWPS0CaTKS');
                         \Pingpp\Pingpp::setPrivateKeyPath(__DIR__ . '/your_rsa_private_key.pem');
