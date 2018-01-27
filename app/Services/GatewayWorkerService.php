@@ -24,7 +24,7 @@ class GatewayWorkerService
             'type' => 'system',
             'message' => $message,
             'from_user_id' => $fromUserId,
-            'to_user_name' => $userId,
+            'to_user_id' => $userId,
             'time' => date('Y-m-d H:i:s'),
         ];
 
@@ -65,7 +65,6 @@ class GatewayWorkerService
     protected static function save($data, $status = Message::STATUS_UNSENT)
     {
         unset($data['time']);
-        dd($data);
         $message = new Message();
         $message->create(
             array_merge($data, ['status' => $status])
