@@ -66,7 +66,7 @@ class PayController extends BaseController
     {
         $user = $this->user;
 
-        $input = $request->only('type', 'method', 'pk');
+        $input = $request->only('type', 'method', 'pk', 'code');
 
         $validator = app('validator')->make($input, [
             'type' => 'required',
@@ -156,6 +156,13 @@ class PayController extends BaseController
 
         //判断余额支付 如果够  则 直接处理订单
         if ($method == Order::BALANCE) {
+            if (!$input['code']) {
+                return self::parametersIllegal("请输入您的支付密码");
+            }
+            $code = $input['code'];
+            if ($code != $user->userAccount->password) {
+                return self::parametersIllegal("请输入正确的支付密码");
+            }
             $originBalance = $user->userInfo->balance;
             if ($originBalance >= $order->fee) {
 

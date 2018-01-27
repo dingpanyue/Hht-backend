@@ -380,4 +380,6 @@ class UserController extends BaseController
         $userId = $request['user_id'];
         GatewayWorkerService::sendSystemMessage($message,$userId);
     }
+
+
 }
