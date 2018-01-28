@@ -372,12 +372,6 @@ class ServiceController extends BaseController
             //上传文件
             $filename = uniqid() . '.' . $ext;//新文件名
             if (Storage::disk('public')->put('/images/services/' . $today . '/' . $filename, file_get_contents($realPath))) {
-
-                $user = $this->user;
-
-                $user->image = "/storage/images/services/$today/$filename";
-                $user->save();
-
                 $imageArray[] = URL::asset($user->image);
             } else {
                 return self::error(self::CODE_FAIL_TO_SAVE_IMAGE, "图片保存出错");
