@@ -47,7 +47,7 @@ class ServiceController extends BaseController
     {
         $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat');
         $services = $this->serviceService->getList($inputs);
-        return self::success($services);
+        return self::success(ServiceTransformer::transformList($services));
     }
 
     //获取单个service详情  主体是service
