@@ -22,8 +22,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     Route::post('/login', 'LoginController@login');
     //Pingpp回调地址
     Route::post('/notify', 'PayController@notify');
-    //获取所有仲裁中的委托列表
+    //获取所有仲裁中的服务实例列表
     Route::get('/arbitrated-services', ['as' => '', 'uses' => 'ServiceController@ArbitratedServices']);
+    //获取所有种菜中的委托列表
+    Route::get('/arbitrated-assignments', ['as' => '', 'uses' => 'AssignmentController@ArbitratedAssignments']);
 
     Route::group(['prefix' => 'regions'], function (){
         //省份

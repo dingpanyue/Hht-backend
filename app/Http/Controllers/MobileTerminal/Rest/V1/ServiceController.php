@@ -388,9 +388,6 @@ class ServiceController extends BaseController
     public function arbitratedServices()
     {
         $acceptedServices  = AcceptedService::where('status', AcceptedService::STATUS_ARBITRATED)->with('service')->get();
-        return self::success($acceptedServices);
+        return self::success(AcceptedServiceTransformer::transformList($acceptedServices));
     }
-    
-
-
 }
