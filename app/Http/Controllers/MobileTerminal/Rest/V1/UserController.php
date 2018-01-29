@@ -121,7 +121,7 @@ class UserController extends BaseController
 
             //所有未读消息 数量
             $Messages = Message::select('from_user_id', DB::raw('count(*) as total'))
-                ->where('to_user_id', $user->id)->where('frodm_user_id', '!=', $user->id)
+                ->where('to_user_id', $user->id)->where('from_user_id', '!=', $user->id)
                 ->where('status', '!=', Message::STATUS_SEEN)
                 ->with('fromUser')
                 ->groupBy('from_user_id')
