@@ -132,11 +132,12 @@ class AssignmentController extends BaseController
 
         $user = new User();
 
-        //get       第一次用laravel 1对多条件查询，和yii还有tp一点都不像、、、
+        //get       第一次用laravel 1对多条件查询，和yii还有tp一点都不像、、、 玩不来，自己构建吧
         $recommendUsers = $user->join('user_talents', 'user_talents.user_id', 'users.id')
-                               ->select('users.id', 'users.name', 'users.image')
+                               ->select('users.id', 'users.name', 'users.image')->where('users.id','!=', $user->id)
                                ->where('user_talents.classification', $assignment->classification)
                                ->limit(3)->get();
+
         $assignment->recommand_users = $recommendUsers;
 
         return self::success(AssignmentTransformer::transform($assignment));
