@@ -1,9 +1,13 @@
 <?php
+
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
+
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\AssignmentClassification;
 use App\Models\GlobalConfig;
+use App\Models\User;
+use App\Models\UserTalent;
 use App\Services\AcceptedAssignmentService;
 use App\Services\AssignmentService;
 use App\Services\Helper;
@@ -24,7 +28,6 @@ use Illuminate\Support\Facades\URL;
  * Date: 2017/9/14
  * Time: 1:50
  */
-
 class AssignmentController extends BaseController
 {
     protected $assignmentService;
@@ -47,6 +50,7 @@ class AssignmentController extends BaseController
     }
 
     //获取所有委托列表 near_by为true且包含lng，lat的时候，会得到5公里以内的
+
     /**
      * @param Request $request
      */
@@ -74,7 +78,7 @@ class AssignmentController extends BaseController
         $classificationString = implode(',', $classificationArray);
 
 
-        $validator =  $validator = app('validator')->make($inputs, [
+        $validator = $validator = app('validator')->make($inputs, [
             "title" => "required|max:{$globalConfigs['assignment_title_limit']}",
             "classification" => "required|integer|in:$classificationString",
             "province_id" => "required|integer",
@@ -91,7 +95,7 @@ class AssignmentController extends BaseController
             "title.max" => "委托标题必须在{$globalConfigs['assignment_title_limit']}以内",
             "classification.required" => "委托分类必须填写",
             "classification.in" => "请选择正确的委托分类",
-            "province_id.required"=> "省份必须选择",
+            "province_id.required" => "省份必须选择",
             "province_id.integer" => "请选择正确的省份",
             "city_id.required" => "城市必须选择",
             "city_id.integer" => "请选择正确的城市",
@@ -126,6 +130,15 @@ class AssignmentController extends BaseController
             throw new Exception($e->getMessage(), $e->getCode());
         }
 
+        $user = new User();
+
+        //get       第一次用laravel 1对多条件查询，和yii还有tp一点都不像、、、
+        $recommendUsers = $user->join('user_talents', 'user_talents.user_id', 'users.id')
+                               ->select('users.id', 'users.name', 'users.image')
+                               ->where('user_talents.classification', $assignment->classification)
+                               ->limit(3)->get();
+        $assignment->recommand_users = $recommendUsers;
+
         return self::success(AssignmentTransformer::transform($assignment));
     }
 
@@ -138,7 +151,7 @@ class AssignmentController extends BaseController
         $assignment = $this->assignmentService->getAssignmentById($assignmentId);
 
         if (!$assignment) {
-           return self::resourceNotFound();
+            return self::resourceNotFound();
         }
 
         $operations = $this->assignmentService->getAssignmentOperationLog($assignment);
@@ -185,7 +198,7 @@ class AssignmentController extends BaseController
         //接下来分两种状况
 
         //第一种情况  用户发布的时候已经把reward报酬  和 deadline 期限填写完了
-        if($assignment->reward && $assignment->deadline){
+        if ($assignment->reward && $assignment->deadline) {
             $acceptedAssignment = $this->assignmentService->acceptAssignment($user->id, $assignment->id);
         } else {
             $reward = $deadline = null;
@@ -229,7 +242,7 @@ class AssignmentController extends BaseController
         );
 
         //已经采纳过其他委托的情况
-        if ($adaptedAcceptedAssignments->count() != 0){
+        if ($adaptedAcceptedAssignments->count() != 0) {
             return self::notAllowed();
         }
 
@@ -359,7 +372,7 @@ class AssignmentController extends BaseController
     //取消委托
     public function cancelAssignment()
     {
-        
+
     }
 
     //上传图片
@@ -369,11 +382,11 @@ class AssignmentController extends BaseController
 
         $assignment = $this->assignmentService->getAssignmentById($id);
 
-        if(!$assignment) {
+        if (!$assignment) {
             return self::resourceNotFound();
         }
 
-        if($assignment->status != Assignment::STATUS_UNPAID && $assignment->status != Assignment::STATUS_WAIT_ACCEPT) {
+        if ($assignment->status != Assignment::STATUS_UNPAID && $assignment->status != Assignment::STATUS_WAIT_ACCEPT) {
             return self::notAllowed();
         }
 
