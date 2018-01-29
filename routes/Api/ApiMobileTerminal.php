@@ -141,6 +141,9 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/wechat_auth', ['as' => '', 'uses' => 'UserController@getUserWechatAuthUrl']);
         //微信回调关联用户
         Route::post('/user/{id}/wechat_auth', ['as' => '', 'uses' => 'UserController@verify']);
+        //用户上传 个人中心展示的照片
+        Route::post('/user-center/images', ['as' => '', 'uses' => 'UserController@uploadUserCenterImages']);
+
     });
 
     //支付接口
