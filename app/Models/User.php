@@ -51,4 +51,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserCenter::class, 'user_id');
     }
+
+    public function userTalents()
+    {
+        return $this->hasMany(UserTalent::class, 'user_id');
+    }
 }

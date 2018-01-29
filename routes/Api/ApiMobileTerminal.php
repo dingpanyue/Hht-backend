@@ -143,7 +143,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/user/{id}/wechat_auth', ['as' => '', 'uses' => 'UserController@verify']);
         //用户上传 个人中心展示的照片
         Route::post('/user-center/images', ['as' => '', 'uses' => 'UserController@uploadUserCenterImages']);
-
+        //用户设置 擅长的classification
+        Route::post('/user-center/talents', ['as' => '', 'uses' => 'UserController@setUserTalents']);
+        //填写用户个人说明
+        Route::post('/user-center/description', ['as' => '', 'uses' => 'UserController@setUserDescription']);
     });
 
     //支付接口

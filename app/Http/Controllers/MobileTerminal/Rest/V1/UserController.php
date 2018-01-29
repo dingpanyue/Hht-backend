@@ -8,6 +8,7 @@ use App\Models\UserAccount;
 use App\Models\UserAddress;
 use App\Models\UserCenter;
 use App\Models\UserInfo;
+use App\Models\UserTalent;
 use App\Services\AddressService;
 use App\Services\GatewayWorkerService;
 use App\Traits\VerifyCardNo;
@@ -382,6 +383,7 @@ class UserController extends BaseController
         GatewayWorkerService::sendSystemMessage($message,$userId);
     }
 
+    //设置个人中心展示图片
     public function uploadUserCenterImages(Request $request)
     {
         $user = $this->user;
@@ -389,6 +391,7 @@ class UserController extends BaseController
 
         if (!$userCenter) {
             $userCenter = new UserCenter();
+            $userCenter->user_id = $user->id;
         }
 
         $inputs = $request->all();
@@ -445,6 +448,52 @@ class UserController extends BaseController
         return self::success($imageArray);
 
     }
+
+    //设置用户专长
+    public function setUserTalents(Request $request)
+    {
+        $user = $this->user;
+
+        $inputs = $request->all();
+
+        UserTalent::where('user_id', $user->id)->delete();
+
+        foreach ($inputs as $k => $input) {
+            $userTalent = new UserTalent();
+            $userTalent->user_id = $user->id;
+            $userTalent->classification = $input;
+            $userTalent->save();
+        }
+
+        return self::success($user->userTalents);
+    }
+
+    //填写用户个人描述
+    public function setUserDescription(Request $request)
+    {
+        $user = $this->user;
+        $userCenter = $user->userCenter;
+
+        if (!$userCenter) {
+            $userCenter = new UserCenter();
+            $userCenter->user_id = $user->id;
+        }
+
+        $inputs = $request->all();
+
+        if (!isset($inputs['description'])) {
+            return self::parametersIllegal('请填写个人说明');
+        }
+
+        $description = $inputs['description'];
+
+        $userCenter->description = $description;
+        $userCenter->save();
+
+        return self::success($user->userCenter);
+    }
+
+
 
 
 }
