@@ -46,4 +46,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(UserAccount::class, 'user_id');
     }
+
+    public function userCenter()
+    {
+        return $this->hasOne(UserCenter::class, 'user_id');
+    }
 }
