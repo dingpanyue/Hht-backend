@@ -384,6 +384,12 @@ class ServiceController extends BaseController
 
         return self::success($imageArray);
     }
+
+    public function arbitratedServices()
+    {
+        $acceptedServices  = AcceptedService::where('status', AcceptedService::STATUS_ARBITRATED)->with('service')->get();
+        return self::success($acceptedServices);
+    }
     
 
 
