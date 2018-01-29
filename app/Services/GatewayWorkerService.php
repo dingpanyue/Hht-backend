@@ -58,7 +58,6 @@ class GatewayWorkerService
         } else {
             self::save($data);
         }
-
         return;
     }
 
