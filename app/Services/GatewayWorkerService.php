@@ -56,6 +56,7 @@ class GatewayWorkerService
             Gateway::sendToUid($userId, json_encode($data,JSON_UNESCAPED_UNICODE));
             self::save($data, Message::STATUS_SENT);
         } else {
+            Gateway::sendToUid($data['from_user_id'], '留言：抱歉我当前不在线,如需联系请点我头像进入个人中心查看');
             self::save($data);
         }
 
