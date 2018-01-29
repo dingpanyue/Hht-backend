@@ -11,6 +11,7 @@ use App\Models\UserInfo;
 use App\Models\UserTalent;
 use App\Services\AddressService;
 use App\Services\GatewayWorkerService;
+use App\Services\Helper;
 use App\Traits\VerifyCardNo;
 use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
@@ -491,6 +492,31 @@ class UserController extends BaseController
         $userCenter->save();
 
         return self::success($user->userCenter);
+    }
+
+    //进入个人中心
+    public function userCenter($id)
+    {
+        $user = $this->user;
+        $User = User::where('id', $id)->with('userInfo')->with('userCenter')->with('userTalents')->first();
+
+        if($user->id == $id) {
+            $editable = true;
+        } else {
+            $editable = false;
+        }
+
+        $User->editable = $editable;
+
+        if (count($user->userTalents)) {
+            $classifications = Helper::transformToKeyValue(app('assignment_classifications'), 'id', 'name');
+            $User->userTalents = $User->userTalents()->pluck('classification');
+
+            foreach ($User->userTalents as $k => $talent) {
+                $User->userTalents[$k] = $classifications[$talent];
+            }
+        }
+        return self::success($User);
     }
 
 

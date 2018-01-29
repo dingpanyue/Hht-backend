@@ -147,6 +147,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/user-center/talents', ['as' => '', 'uses' => 'UserController@setUserTalents']);
         //填写用户个人说明
         Route::post('/user-center/description', ['as' => '', 'uses' => 'UserController@setUserDescription']);
+        //进入个人页面
+        Route::get('/{user_id}/user-center', ['as' => '', 'uses' => 'UserController@userCenter']);
     });
 
     //支付接口
