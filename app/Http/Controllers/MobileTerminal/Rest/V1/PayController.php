@@ -11,6 +11,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 use App\Events\RefundSucceed;
 use App\Events\TransferFailed;
 use App\Events\TransferSucceed;
+use App\Models\AcceptedAssignment;
 use App\Models\AcceptedService;
 use App\Models\Assignment;
 use App\Models\OperationLog;
@@ -255,7 +256,7 @@ class PayController extends BaseController
             \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
             $charge = \Pingpp\Charge::create(array(
                 'order_no' => $order->out_trade_no,
-                'amount' => $order->fee*100,
+                'amount' => $order->fee * 100,
                 'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
                 'channel' => $method,
                 'currency' => 'cny',
@@ -436,9 +437,21 @@ class PayController extends BaseController
             if (!$order) {
                 return self::error(self::CODE_ORDER_STATUS_ABNORMAL, '订单状态异常，无法完成退款');
             } else {
+                //删除子对象
+                $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->get();
+
+                foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
+                    $message = "由于委托 $assignment->title 已经申请退款， 您接受该委托的申请已失效，系统帮您自动删除";
+                    GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
+                }
+
+
                 //处理余额退款
                 if ($order->method == Order::BALANCE) {
+
+
                     DB::transaction(function () use ($order, $user, $assignment) {
+
 
                         //返回余额
                         $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
@@ -513,7 +526,6 @@ class PayController extends BaseController
     }
 
 
-
     //Pingpp 提现接口
     public function withdrawals(Request $request)
     {
@@ -545,7 +557,7 @@ class PayController extends BaseController
 
         $amount = $inputs['amount'];
         $method = $inputs['method'];
-        $out_trade_no = 'Withdrawal'.time();
+        $out_trade_no = 'Withdrawal' . time();
 
 
         if ($method == 'alipay') {
@@ -586,7 +598,7 @@ class PayController extends BaseController
                 $finalBalance = $originBalance - $amount;
 
                 if ($finalBalance < 0) {
-                    throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH,self::CODE_BALANCE_NOTE_ENOUGH);
+                    throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH, self::CODE_BALANCE_NOTE_ENOUGH);
                 }
 
                 $userInfo->balance = $finalBalance;
@@ -599,7 +611,7 @@ class PayController extends BaseController
                         'order_no' => $out_trade_no,
                         'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
                         'channel' => $method,
-                        'amount' => $amount*100,
+                        'amount' => $amount * 100,
                         'currency' => 'cny',
                         'type' => 'b2c',
                         'recipient' => $userAccount->alipay,

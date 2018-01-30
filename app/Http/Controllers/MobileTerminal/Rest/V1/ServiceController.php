@@ -173,6 +173,12 @@ class ServiceController extends BaseController
         return self::success(ServiceTransformer::transform($service));
     }
 
+    //删除服务
+    public function cancelService()
+    {
+
+    }
+
     //购买服务
     public function buyService($serviceId, Request $request)
     {
