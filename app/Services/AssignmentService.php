@@ -376,7 +376,7 @@ class AssignmentService
 
 
         //推送给提交完成的人
-        $message = "您提交的完成委托 $assignment->title 的请求已被拒绝，目前交由客服处理中，请联系客服或者委托人了解详情";
+        $message = "您提交的完成委托 $assignment->title 的请求已被拒绝，请耐心等待客服介入";
         GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;

@@ -326,6 +326,8 @@ class ServiceService
             OperationLog::STATUS_ARBITRATED
         );
 
+        //todo 推送给客服 客服系统还没做
+
         //推送
         $message = "您售出的服务 $service->title 已被购买方拒绝完成，请耐心等待客服介入";
         GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
