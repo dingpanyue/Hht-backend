@@ -355,7 +355,7 @@ class ServiceController extends BaseController
             return self::resourceNotFound();
         }
 
-        if ($acceptedService->status != AcceptedService::STATUS_ADAPTED && $acceptedService->status != AcceptedService::STATUS_DEALT) {
+        if ($acceptedService->status != AcceptedService::STATUS_DEALT) {
             return self::notAllowed();
         }
 

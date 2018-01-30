@@ -314,7 +314,7 @@ class ServiceService
         $acceptedService->status = AcceptedService::STATUS_ARBITRATED;
         $acceptedService->save();
 
-        $service = $acceptedService->service();
+        $service = $acceptedService->service;
 
         //记录日志 -- 拒绝完成接受的服务
         $this->operationLogService->log(
