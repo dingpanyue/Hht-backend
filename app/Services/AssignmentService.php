@@ -211,7 +211,16 @@ class AssignmentService
     {
         $assignment = $this->assignmentEloqument->find($acceptedAssignment->parent_id);
 
+        $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->where('id', '!=', $acceptedAssignment->id)->get();
+
+        foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
+            $message = "由于委托 $assignment->title 已经接受其他人的申请， 您接受该委托的申请已失效，系统帮您自动删除";
+            GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
+        }
+
         $acceptedAssignment = DB::transaction(function () use ($acceptedAssignment, $assignment) {
+
+            AcceptedAssignment::where('parent_id', $assignment->id)->where('id', '!=', $acceptedAssignment->id)->delete();
 
             $acceptedAssignment->status = AcceptedAssignment::STATUS_ADAPTED;
             $acceptedAssignment->save();
@@ -219,6 +228,8 @@ class AssignmentService
             $assignment->status = Assignment::STATUS_ADAPTED;
             $assignment->adapted_assignment_id = $acceptedAssignment->id;
             $assignment->save();
+
+
 
             //添加定时任务， 检测 deadline
             $timedTask = new TimedTask();
