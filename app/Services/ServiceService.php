@@ -215,6 +215,7 @@ class ServiceService
 
     }
 
+    //提交完成
     public function dealAcceptedService(AcceptedService $acceptedService)
     {
         $acceptedService->status = AcceptedService::STATUS_DEALT;
@@ -240,6 +241,7 @@ class ServiceService
 
     }
 
+    //确认完成
     public function finishAcceptedService(AcceptedService $acceptedService)
     {
         if ($acceptedService->status == AcceptedService::STATUS_ADAPTED) {
@@ -306,7 +308,30 @@ class ServiceService
         return $acceptedService;
     }
 
-    //todo 拒绝完成
+    //拒绝完成
+    public function refuseToFinishAcceptedService(AcceptedService $acceptedService)
+    {
+        $acceptedService->status = AcceptedService::STATUS_ARBITRATED;
+        $acceptedService->save();
+
+        $service = $acceptedService->service();
+
+        //记录日志 -- 拒绝完成接受的服务
+        $this->operationLogService->log(
+            OperationLog::OPERATION_REFUSE_FINISH,
+            OperationLog::TABLE_ACCEPTED_SERVICES,
+            $acceptedService->id,
+            $acceptedService->assign_user_id,
+            OperationLog::STATUS_DEALT,
+            OperationLog::STATUS_ARBITRATED
+        );
+
+        //推送
+        $message = "您售出的服务 $service->title 已被购买方拒绝完成，请耐心等待客服介入";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
+
+        return $acceptedService;
+    }
 
 
 }

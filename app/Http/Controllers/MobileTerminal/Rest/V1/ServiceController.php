@@ -259,8 +259,8 @@ class ServiceController extends BaseController
         if ($acceptedService->serve_user_id != $user->id) {
             return self::notAllowed("您不是该服务的发布人");
         } else {
-            $acceptedAssignment = $this->serviceService->acceptBoughtService($acceptedService);
-            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
+            $acceptedService = $this->serviceService->acceptBoughtService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
         }
     }
 
@@ -284,8 +284,8 @@ class ServiceController extends BaseController
         if ($acceptedService->serve_user_id != $user->id) {
             return self::notAllowed("您不是该服务的发布人");
         } else {
-            $acceptedAssignment = $this->serviceService->refuseBoughtService($acceptedService);
-            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
+            $acceptedService = $this->serviceService->refuseBoughtService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
         }
     }
 
@@ -310,12 +310,12 @@ class ServiceController extends BaseController
         if ($acceptedService->serve_user_id != $user->id) {
             return self::notAllowed();
         } else {
-            $acceptedAssignment = $this->serviceService->dealAcceptedService($acceptedService);
-            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
+            $acceptedService = $this->serviceService->dealAcceptedService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
         }
     }
 
-    //确认完成被接受的委托
+    //确认完成被接受的服务
     public function finishAcceptedService($acceptedServiceId)
     {
         $user = $this->user;
@@ -336,9 +336,36 @@ class ServiceController extends BaseController
         if ($acceptedService->assign_user_id != $user->id) {
             return self::notAllowed();
         } else {
-            $acceptedAssignment = $this->serviceService->finishAcceptedService($acceptedService);
-            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
+            $acceptedService = $this->serviceService->finishAcceptedService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
         }
+    }
+
+    //拒绝完成被接受的服务
+    public function refuseToFinishAcceptedService($acceptedServiceId)
+    {
+        $user = $this->user;
+
+        /**
+         * @var $acceptedService AcceptedService
+         */
+        $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($acceptedServiceId);
+
+        if (!$acceptedService) {
+            return self::resourceNotFound();
+        }
+
+        if ($acceptedService->status != AcceptedService::STATUS_ADAPTED && $acceptedService->status != AcceptedService::STATUS_DEALT) {
+            return self::notAllowed();
+        }
+
+        if ($acceptedService->assign_user_id != $user->id) {
+            return self::notAllowed();
+        } else {
+            $acceptedService = $this->serviceService->refuseToFinishAcceptedService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
+        }
+
     }
 
     //上传图片
