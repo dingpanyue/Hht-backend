@@ -48,6 +48,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
         //发布委托
         Route::post('/publish', ['as' => 'Create', 'uses' => 'AssignmentController@publishAssignment']);
+        //取消委托
+        Route::post('/cancel/{id}', ['as' => 'Cancel', 'uses' => 'AssignmentController@cancelAssignment']);
         //上传委托图片
         Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'AssignmentController@upload']);
         //接受委托
@@ -58,6 +60,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/deal/{id}', ['as' => '', 'uses' => 'AssignmentController@dealAcceptedAssignment']);
         //确认完成  委托
         Route::post('/finish/{id}', ['as' => '', 'uses' => 'AssignmentController@finishAcceptedAssignment']);
+
     });
 
     //地区接口

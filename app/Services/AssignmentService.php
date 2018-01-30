@@ -67,6 +67,23 @@ class AssignmentService
         return $assignment;
     }
 
+    //取消委托
+    public function cancelAssignment(Assignment $assignment, $userId)
+    {
+        $assignment->status = Assignment::STATUS_FAILED;
+        $assignment->save();
+
+        $this->operationLogService->log(
+            OperationLog::OPERATION_CANCEL,
+            OperationLog::TABLE_ASSIGNMENTS,
+            $assignment->id,
+            $userId,
+            OperationLog::STATUS_UNPAID,
+            OperationLog::STATUS_FAILED,
+            "用户取消未支付的委托"
+        );
+    }
+
     //获取委托列表
     public function getList($params,  $status = Assignment::STATUS_WAIT_ACCEPT)
     {

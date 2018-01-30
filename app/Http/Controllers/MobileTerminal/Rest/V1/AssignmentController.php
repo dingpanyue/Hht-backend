@@ -143,6 +143,37 @@ class AssignmentController extends BaseController
         return self::success(AssignmentTransformer::transform($assignment));
     }
 
+    //取消委托
+    public function cancelAssignment($assignmentId)
+    {
+        $user = $this->user;
+
+        /**
+         * @var $assignment Assignment
+         */
+        $assignment = $this->assignmentService->getAssignmentById($assignmentId);
+
+        if (!$assignment) {
+            return self::resourceNotFound();
+        }
+
+        if ($assignment->user_id != $user->id) {
+            return self::notAllowed('你不能取消不是自己发布的委托');
+        }
+
+        if ($assignment->status != Assignment::STATUS_UNPAID) {
+            return self::notAllowed('当前委托不允许取消操作');
+        }
+
+        try {
+            $this->assignmentService->cancelAssignment($assignment, $user->id);
+        } catch (Exception $e) {
+            return self::error($e->getCode(), $e->getMessage());
+        }
+
+        return self::success();
+    }
+
     //获取单个委托详情
     public function detail($assignmentId)
     {
@@ -368,12 +399,6 @@ class AssignmentController extends BaseController
         }
 
         return self::success(AcceptedAssignmentTransformer::transformList($acceptedAssignments, false));
-    }
-
-    //取消委托
-    public function cancelAssignment()
-    {
-
     }
 
     //上传图片

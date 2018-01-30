@@ -520,8 +520,4 @@ class UserController extends BaseController
         }
         return self::success($User);
     }
-
-
-
-
 }
