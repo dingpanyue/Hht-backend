@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\OperationLog;
 use App\Models\Order;
@@ -62,10 +63,20 @@ class Expire extends Command
 
         //已经支付没人接的
         if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
+
+            $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->get();
+
+            foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
+                $message = "由于委托 $assignment->title 已达过期时间， 您接受该委托的申请已失效，系统帮您自动删除";
+                GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
+            }
+
             DB::transaction(function () use ($assignment) {
 
                 $assignment->status = Assignment::STATUS_FAILED;
                 $assignment->save();
+
+                AcceptedAssignment::where('parent_id', $assignment->id)->delete();
 
                 $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
 
@@ -108,7 +119,7 @@ class Expire extends Command
                         -$order->fee
                     );
 
-                    $message = "您发布的委托由于超过期限未有人接，委托已失败,已退款到您的余额";
+                    $message = "您发布的委托由于过期未能找到合适的服务方，委托已失败,已退款到您的余额";
                     GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
                 } else {
