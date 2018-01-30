@@ -137,9 +137,11 @@ class UserController extends BaseController
     }
 
     //获取和其他某用的聊天记录
-    public function getMessages($id)
+    public function getMessages($id, Request $request)
     {
         $user = $this->user;
+        $inputs = $request->all();
+        $perPage = $inputs['per_page'];
 
         if ($user->id == $id) {
             return self::parametersIllegal('您自己无法和自己聊天');
@@ -153,7 +155,7 @@ class UserController extends BaseController
             });
         })
             ->orderBy('created_at', 'desc')
-            ->paginate();
+            ->paginate($perPage);
 
         Message::where('from_user_id', $id)->where('to_user_id', $user->id)->update(
             ['status' => Message::STATUS_SEEN]
