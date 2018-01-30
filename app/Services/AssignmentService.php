@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\AcceptedAssignment;
@@ -85,7 +86,7 @@ class AssignmentService
     }
 
     //获取委托列表
-    public function getList($params,  $status = Assignment::STATUS_WAIT_ACCEPT)
+    public function getList($params, $status = Assignment::STATUS_WAIT_ACCEPT)
     {
         $params = array_filter($params);
 
@@ -150,17 +151,21 @@ class AssignmentService
         $acceptedAssignment = new AcceptedAssignment();
 
         if ($assignment->reward && $assignment->deadline) {
-            $acceptedAssignment = $acceptedAssignment->create(
-                [
-                    'assign_user_id' => $assignment->user_id,
-                    'serve_user_id' => $userId,
-                    'parent_id' => $assignment->id,
-                    'reward' => $assignment->reward,
-                    'deadline' => $assignment->deadline,
-                    'status' => AcceptedAssignment::STATUS_SUBMITTED,
-                    'comment' => '',
-                ]
-            );
+            try {
+                $acceptedAssignment = $acceptedAssignment->create(
+                    [
+                        'assign_user_id' => $assignment->user_id,
+                        'serve_user_id' => $userId,
+                        'parent_id' => $assignment->id,
+                        'reward' => $assignment->reward,
+                        'deadline' => $assignment->deadline,
+                        'status' => AcceptedAssignment::STATUS_SUBMITTED,
+                        'comment' => '',
+                    ]
+                );
+            } catch (\Exception $e) {
+                throw $e;
+            }
         } else {
             //发布者的委托中有什么取什么
             if ($assignment->reward) {
@@ -377,7 +382,7 @@ class AssignmentService
     public function getAssignmentsByUser(User $user, $status = 'all')
     {
         //自己发布的委托
-        $assignments = $this->assignmentEloqument->with('acceptedAssignments')->with('adaptedAssignment')->where('user_id', $user->id)->orderBy('status', 'asc');
+        $assignments = $this->assignmentEloqument->with('acceptedAssignments')->with('adaptedAssignment')->where('user_id', $user->id)->orderBy('created_at', 'desc');
 
         if ($status != 'all') {
             $assignments->where('status', $status);
