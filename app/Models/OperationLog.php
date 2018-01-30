@@ -30,6 +30,7 @@ class OperationLog extends Model
     const OPERATION_FINISH = 'finish';
     const OPERATION_REFUSE_FINISH = 'refuse_finish';
     const OPERATION_REFUND = 'refund';
+    const OPERATION_REFUSE = 'refuse';
 
     const STATUS_UNPAID = 'unpaid';
     const STATUS_COMMITTED = 'committed';
@@ -42,6 +43,7 @@ class OperationLog extends Model
     const STATUS_FAILED = 'failed';
     const STATUS_ARBITRATED = 'arbitrated';
     const STATUS_REFUNDING = 'refunding';
+    const STATUS_REFUSED = 'refused';
 
     const TABLE_ASSIGNMENTS = 'assignments';
     const TABLE_SERVICES = 'services';

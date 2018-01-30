@@ -264,6 +264,31 @@ class ServiceController extends BaseController
         }
     }
 
+    //拒绝 购买者 购买服务
+    public function refuseBoughtService($acceptedServiceId)
+    {
+        $user = $this->user;
+        /**
+         * @var $acceptedService AcceptedService
+         */
+        $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($acceptedServiceId);
+
+        if (!$acceptedService) {
+            return self::resourceNotFound();
+        }
+
+        if ($acceptedService->status != AcceptedService::STATUS_SUBMITTED) {
+            return self::notAllowed();
+        }
+
+        if ($acceptedService->serve_user_id != $user->id) {
+            return self::notAllowed("您不是该服务的发布人");
+        } else {
+            $acceptedAssignment = $this->serviceService->refuseBoughtService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedAssignment));
+        }
+    }
+
     //告知完成被接收的委托 serve_user
     public function dealAcceptedService($acceptedServiceId)
     {

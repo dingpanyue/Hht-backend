@@ -189,6 +189,32 @@ class ServiceService
         return $acceptedService;
     }
 
+    //拒绝 购买服务
+    public function refuseBoughtService(AcceptedService $acceptedService)
+    {
+        $acceptedService->status = AcceptedService::STATUS_REFUSED;
+        $acceptedService->save();
+
+        $service = $acceptedService->service;
+
+        //记录日志 -- 拒绝接受的委托
+        $this->operationLogService->log(
+            OperationLog::OPERATION_REFUSE,
+            OperationLog::TABLE_ACCEPTED_SERVICES,
+            $acceptedService->id,
+            $acceptedService->serve_user_id,
+            OperationLog::STATUS_COMMITTED,
+            OperationLog::STATUS_REFUSED
+        );
+
+        //推送
+        $message = "您购买服务 $service->title 的请求已被拒绝";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+
+        return $acceptedService;
+
+    }
+
     public function dealAcceptedService(AcceptedService $acceptedService)
     {
         $acceptedService->status = AcceptedService::STATUS_DEALT;

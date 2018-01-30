@@ -21,7 +21,8 @@ class AcceptedServiceTransformer
         AcceptedService::STATUS_ARBITRATED => '仲裁中',
         AcceptedService::STATUS_FINISHED => '已完成',
         AcceptedService::STATUS_FAILED => '失败',
-        AcceptedService::STATUS_REFUNDING => '退款中'
+        AcceptedService::STATUS_REFUNDING => '退款中',
+        AcceptedService::STATUS_REFUSED => '已拒绝'
     ];
 
     public static function transform(AcceptedService $acceptedService, $includeService = true)
