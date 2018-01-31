@@ -29,6 +29,7 @@ class Service extends Model
 {
     //
     const STATUS_PUBLISHED = 0;
+    const STATUS_CANCELED = 1;
 
 
     public $fillable = [

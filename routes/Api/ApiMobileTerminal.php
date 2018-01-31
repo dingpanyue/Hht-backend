@@ -76,10 +76,14 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/accepted_services/{id}/detail', ['as' => '', 'uses' => 'ServiceController@acceptedServiceDetail']);
         //发布服务
         Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publishService']);
+        //取消服务(service)
+        Route::post('/cancel', ['as' => '', 'uses' => 'ServiceController@cancelService']);
         //上传服务图片
         Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'ServiceController@upload']);
         //购买服务 post参数为reward 和 deadline
         Route::post('/buy/{id}', ['as' => '', 'uses' => 'ServiceController@buyService']);
+        //取消购买服务的申请
+        Route::post('/cancel-accepted', ['as' => '', 'uses' => 'ServiceController@cancelAcceptedService']);
         //同意 购买者  购买服务
         Route::post('/accept/{id}', ['as' => '', 'uses' => 'ServiceController@acceptBoughtService']);
         //拒绝 购买者  购买服务

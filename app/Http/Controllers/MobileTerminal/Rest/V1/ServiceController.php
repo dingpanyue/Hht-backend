@@ -173,13 +173,31 @@ class ServiceController extends BaseController
         return self::success(ServiceTransformer::transform($service));
     }
 
-    //删除服务
-    public function cancelService()
+    //取消服务 (但不影响已经提交的购买申请  和已经在处理中的服务)
+    public function cancelService($serviceId)
     {
+        //当前登录用户
+        $user = $this->user;
+        //获取服务
+        /**
+         * @var $service Service
+         */
+        $service = $this->serviceService->getServiceById($serviceId);
 
+        if (!$service->user_id == $user->id) {
+            return self::notAllowed('该服务不属于您');
+        }
+
+        if ($service->status == Service::STATUS_CANCELED) {
+            return self::notAllowed('该服务已被取消');
+        }
+
+        $service = $this->serviceService->cancelService($service);
+
+        return self::success($service);
     }
 
-    //购买服务
+    //申请购买服务
     public function buyService($serviceId, Request $request)
     {
         //当前登陆用户
@@ -243,6 +261,33 @@ class ServiceController extends BaseController
         $acceptedService= $this->serviceService->buyService($user->id, $service->id, $reward, $deadline);
 
         return self::success(AcceptedServiceTransformer::transform($acceptedService));
+    }
+
+    //取消购买服务申请
+    public function cancelAcceptedService($acceptedServiceId)
+    {
+        $user = $this->user;
+
+        /**
+         * @var $acceptedService AcceptedService
+         */
+        $acceptedService = $this->acceptedServiceService->getAcceptedServiceById($acceptedServiceId);
+
+        if (!$acceptedService) {
+            return self::resourceNotFound();
+        }
+
+        if ($acceptedService->status != AcceptedService::STATUS_SUBMITTED) {
+            return self::notAllowed();
+        }
+
+        if ($acceptedService->assign_user_id != $user->id) {
+            return self::notAllowed();
+        } else {
+            $acceptedService = $this->serviceService->cancelAcceptedService($acceptedService);
+            return self::success(AcceptedServiceTransformer::transform($acceptedService));
+        }
+
     }
 
     //同意 购买者 购买服务

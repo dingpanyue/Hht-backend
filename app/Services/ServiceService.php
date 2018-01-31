@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Services;
+
 use App\Models\AcceptedService;
 use App\Models\OperationLog;
 use App\Models\Order;
@@ -15,7 +17,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * Date: 2017/12/10
  * Time: 4:55
  */
-
 class ServiceService
 {
     protected $serviceEloqument;
@@ -56,7 +57,7 @@ class ServiceService
         return $service;
     }
 
-    public function getList($params,  $status = Service::STATUS_PUBLISHED)
+    public function getList($params, $status = Service::STATUS_PUBLISHED)
     {
         $params = array_filter($params);
 
@@ -119,6 +120,15 @@ class ServiceService
             '',
             OperationLog::STATUS_PUBLISHED
         );
+
+        return $service;
+    }
+
+    //取消服务  但不影响已经提交的购买申请  和已经在处理中的服务
+    public function cancelService(Service $service)
+    {
+        $service->status = Service::STATUS_CANCELED;
+        $service->save();
 
         return $service;
     }
@@ -330,6 +340,29 @@ class ServiceService
 
         //推送
         $message = "您售出的服务 $service->title 已被购买方拒绝完成，请耐心等待客服介入";
+        GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
+
+        return $acceptedService;
+    }
+
+    //取消购买服务的申请
+    public function cancelAcceptedService(AcceptedService $acceptedService)
+    {
+        $acceptedService->status = AcceptedService::STATUS_CANCELED;
+        $acceptedService->save();
+
+        $service = $acceptedService->service;
+
+        $this->operationLogService->log(
+            OperationLog::OPERATION_CANCEL,
+            OperationLog::TABLE_ACCEPTED_SERVICES,
+            $acceptedService->id,
+            $acceptedService->assign_user_id,
+            OperationLog::STATUS_COMMITTED,
+            OperationLog::STATUS_CANCELED
+        );
+
+        $message = "您的服务 $service->title 有一个购买申请已被购买方取消";
         GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
 
         return $acceptedService;
