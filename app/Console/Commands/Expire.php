@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\AcceptedAssignment;
+use App\Models\AcceptedService;
 use App\Models\Assignment;
 use App\Models\OperationLog;
 use App\Models\Order;
@@ -59,121 +60,149 @@ class Expire extends Command
         $type = $this->argument('type');
         $id = $this->argument('id');
 
-        $assignment = Assignment::where('id', $id)->first();
+        if ($type == 'assign') {
+            $assignment = Assignment::where('id', $id)->first();
 
-        //已经支付没人接的
-        if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
+            //已经支付没人接的
+            if ($assignment->status == Assignment::STATUS_WAIT_ACCEPT) {
 
-            $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->get();
+                $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->get();
 
-            foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
-                $message = "由于委托 $assignment->title 已达过期时间， 您接受该委托的申请已失效，系统帮您自动删除";
-                GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
+                foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
+                    $message = "由于委托 $assignment->title 已达过期时间， 您接受该委托的申请已失效，系统帮您自动删除";
+                    GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
+                }
+
+                DB::transaction(function () use ($assignment) {
+
+                    $assignment->status = Assignment::STATUS_FAILED;
+                    $assignment->save();
+
+                    AcceptedAssignment::where('parent_id', $assignment->id)->delete();
+
+                    $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
+
+                    if (!$order) {
+                        Log::info("处理委托 $assignment->id outdate时出现错误，没有对应的订单");
+                        throw new \Exception();
+                    }
+                    if ($order->method == Order::BALANCE) {
+                        //返回余额
+                        $user = $assignment->user;
+                        $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
+                        $originBalance = $balance[0];
+                        $finalBalance = $originBalance + $order->fee;
+
+                        $userInfo = $user->userInfo;
+                        $userInfo->balance = $finalBalance;
+                        $userInfo->save();
+
+                        //修改订单状态
+                        $order->status = Order::STATUS_REFUNDED;
+                        $order->save();
+
+                        //添加操作日志
+                        $this->operationLogService->log(
+                            OperationLog::OPERATION_REFUND,
+                            OperationLog::TABLE_ASSIGNMENTS,
+                            $assignment->id,
+                            0,
+                            OperationLog::STATUS_WAIT_ACCEPT,
+                            OperationLog::STATUS_FAILED,
+                            "委托已过期，无人接收"
+                        );
+
+                        //流水日志 负数
+                        $this->flowLogService->log(
+                            $assignment->user_id,
+                            'orders',
+                            $order->method,
+                            $order->id,
+                            -$order->fee
+                        );
+
+                        $message = "您发布的委托由于过期未能找到合适的服务方，委托已失败,已退款到您的余额";
+                        GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+
+                    } else {
+                        $charge_id = $order->charge_id;
+
+                        \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                        \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
+
+                        $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
+
+                        try {
+                            $refund = $ch->refunds->create(
+                                array(
+                                    'amount' => $order->fee * 100,
+                                    'description' => 'Refund Description'
+                                )
+                            );
+                        } catch (\Exception $e) {
+                            \Log::error($e->getCode(), $e->getMessage());
+                        }
+
+                        //把委托状态改为退款中   将退款id 写入order
+                        DB::transaction(function () use ($order, $assignment, $refund) {
+                            $assignment->status = Assignment::STATUS_REFUNDING;
+                            $assignment->save();
+
+                            $order->refund_id = $refund->id;
+                            $order->save();
+                        });
+
+                        $message = "您发布的委托由于超过期限未有人接，委托已失败,已退款到您的余额";
+                        GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+                    }
+                });
             }
 
-            DB::transaction(function () use ($assignment) {
+            //未支付的
+            if ($assignment->status == Assignment::STATUS_UNPAID) {
 
                 $assignment->status = Assignment::STATUS_FAILED;
                 $assignment->save();
 
-                AcceptedAssignment::where('parent_id', $assignment->id)->delete();
+                $message = "您发布的委托由于过期仍未支付，已经自动取消";
+                GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
-                $order = Order::where('type', 'assignment')->where('primary_key', $assignment->id)->where('status', 'succeed')->first();
-
-                if (!$order) {
-                    Log::info("处理委托 $assignment->id outdate时出现错误，没有对应的订单");
-                    throw new \Exception();
-                }
-                if ($order->method == Order::BALANCE) {
-                    //返回余额
-                    $user = $assignment->user;
-                    $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
-                    $originBalance = $balance[0];
-                    $finalBalance = $originBalance + $order->fee;
-
-                    $userInfo = $user->userInfo;
-                    $userInfo->balance = $finalBalance;
-                    $userInfo->save();
-
-                    //修改订单状态
-                    $order->status = Order::STATUS_REFUNDED;
-                    $order->save();
-
-                    //添加操作日志
-                    $this->operationLogService->log(
-                        OperationLog::OPERATION_REFUND,
-                        OperationLog::TABLE_ASSIGNMENTS,
-                        $assignment->id,
-                        0,
-                        OperationLog::STATUS_WAIT_ACCEPT,
-                        OperationLog::STATUS_FAILED,
-                        "委托已过期，无人接收"
-                    );
-
-                    //流水日志 负数
-                    $this->flowLogService->log(
-                        $assignment->user_id,
-                        'orders',
-                        $order->method,
-                        $order->id,
-                        -$order->fee
-                    );
-
-                    $message = "您发布的委托由于过期未能找到合适的服务方，委托已失败,已退款到您的余额";
-                    GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
-
-                } else {
-                    $charge_id = $order->charge_id;
-
-                    \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
-                    \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
-
-                    $ch = \Pingpp\Charge::retrieve($charge_id);//ch_id 是已付款的订单号
-
-                    try {
-                        $refund = $ch->refunds->create(
-                            array(
-                                'amount' => $order->fee * 100,
-                                'description' => 'Refund Description'
-                            )
-                        );
-                    } catch (\Exception $e) {
-                        \Log::error($e->getCode(), $e->getMessage());
-                    }
-
-                    //把委托状态改为退款中   将退款id 写入order
-                    DB::transaction(function () use ($order, $assignment, $refund) {
-                        $assignment->status = Assignment::STATUS_REFUNDING;
-                        $assignment->save();
-
-                        $order->refund_id = $refund->id;
-                        $order->save();
-                    });
-
-                    $message = "您发布的委托由于超过期限未有人接，委托已失败,已退款到您的余额";
-                    GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
-                }
-            });
+                $this->operationLogService->log(
+                    OperationLog::OPERATION_CANCEL,
+                    OperationLog::TABLE_ASSIGNMENTS,
+                    $assignment->id,
+                    0,
+                    OperationLog::STATUS_UNPAID,
+                    OperationLog::STATUS_FAILED,
+                    "委托过期无人支付，委托失败"
+                );
+            }
         }
 
-        //未支付的
-        if ($assignment->status == Assignment::STATUS_UNPAID) {
+        //被同意购买的服务过期未支付
+        if ($type == 'serve') {
+            $acceptedService = AcceptedService::find($id);
+            $service = $acceptedService->service;
 
-            $assignment->status = Assignment::STATUS_FAILED;
-            $assignment->save();
+            if ($acceptedService->status == AcceptedService::STATUS_UNPAID) {
+                $acceptedService->status = AcceptedService::STATUS_CANCELED;
+                $acceptedService->save();
 
-            $message = "您发布的委托由于过期仍未支付，已经自动取消";
-            GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+                $this->operationLogService->log(
+                    OperationLog::OPERATION_CANCEL,
+                    OperationLog::TABLE_ACCEPTED_SERVICES,
+                    $acceptedService->id,
+                    0,
+                    OperationLog::STATUS_UNPAID,
+                    OperationLog::STATUS_CANCELED
+                );
 
-            $this->operationLogService->log(
-                OperationLog::OPERATION_CANCEL,
-                OperationLog::TABLE_ASSIGNMENTS,
-                $assignment->id,
-                0,
-                OperationLog::STATUS_UNPAID,
-                OperationLog::STATUS_FAILED,
-                "委托过期无人支付，委托失败"
-            );
+                $message = "您同意的购买 $service->title 的申请，由于申请方30分钟内未支付，已经自动取消";
+                GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
+
+                $message = "您购买服务 $service->title 的申请同意后，30分钟内您未进行支付，已被系统自动取消";
+                GatewayWorkerService::sendSystemMessage($message, $acceptedService->assign_user_id);
+            }
         }
     }
 }

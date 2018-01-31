@@ -6,6 +6,7 @@ use App\Models\AcceptedService;
 use App\Models\OperationLog;
 use App\Models\Order;
 use App\Models\Service;
+use App\Models\TimedTask;
 use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -181,6 +182,14 @@ class ServiceService
         $acceptedService->save();
 
         $service = $acceptedService->service;
+
+        //定时检查30分钟有没有支付
+        $timedTask = new TimedTask();
+        $timedTask->name = "服务 $acceptedService->id expire";
+        $timedTask->command = "expire serve $acceptedService->id";
+        $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedService->deadline) + 1800) . ':00';
+        $timedTask->result = 0;
+        $timedTask->save();
 
         //记录日志 -- 采纳接受的委托
         $this->operationLogService->log(
