@@ -144,6 +144,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/user-center/description', ['as' => '', 'uses' => 'UserController@setUserDescription']);
         //进入个人页面
         Route::get('/{user_id}/user-center', ['as' => '', 'uses' => 'UserController@userCenter']);
+        //获取所有离线消息
+        Route::get('/offline-messages', ['as' => '', 'uses' => 'UserController@offlineMessages']);
     });
 
     //支付接口
