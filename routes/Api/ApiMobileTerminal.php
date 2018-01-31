@@ -77,7 +77,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //发布服务
         Route::post('/publish', ['as' => '', 'uses' => 'ServiceController@publishService']);
         //取消服务(service)
-        Route::post('/cancel', ['as' => '', 'uses' => 'ServiceController@cancelService']);
+        Route::post('/cancel/{id}', ['as' => '', 'uses' => 'ServiceController@cancelService']);
         //上传服务图片
         Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'ServiceController@upload']);
         //购买服务 post参数为reward 和 deadline
