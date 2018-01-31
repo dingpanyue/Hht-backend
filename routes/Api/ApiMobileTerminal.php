@@ -146,6 +146,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/{user_id}/user-center', ['as' => '', 'uses' => 'UserController@userCenter']);
         //获取所有离线消息
         Route::get('/offline-messages', ['as' => '', 'uses' => 'UserController@offlineMessages']);
+        //处理完离线消息的回调
+        Route::post('/offline-messages-dealt', ['as' => '', 'uses' => 'UserController@offlineMessagesDealt']);
     });
 
     //支付接口
