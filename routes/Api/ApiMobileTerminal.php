@@ -83,7 +83,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //购买服务 post参数为reward 和 deadline
         Route::post('/buy/{id}', ['as' => '', 'uses' => 'ServiceController@buyService']);
         //取消购买服务的申请
-        Route::post('/cancel-accepted', ['as' => '', 'uses' => 'ServiceController@cancelAcceptedService']);
+        Route::post('/cancel-accepted/{id}', ['as' => '', 'uses' => 'ServiceController@cancelAcceptedService']);
         //同意 购买者  购买服务
         Route::post('/accept/{id}', ['as' => '', 'uses' => 'ServiceController@acceptBoughtService']);
         //拒绝 购买者  购买服务

@@ -13,7 +13,8 @@ use App\Services\Helper;
 class ServiceTransformer
 {
     public static $statuses = [
-        Service::STATUS_PUBLISHED => '已发布'
+        Service::STATUS_PUBLISHED => '已发布',
+        Service::STATUS_CANCELED => '已取消'
     ];
 
     public static function transform(Service $service, $includeAcceptedServices = true)
