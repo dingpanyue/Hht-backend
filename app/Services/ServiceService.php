@@ -187,7 +187,7 @@ class ServiceService
         $timedTask = new TimedTask();
         $timedTask->name = "服务 $acceptedService->id expire";
         $timedTask->command = "expire serve $acceptedService->id";
-        $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedService->deadline) + 1800) . ':00';
+        $timedTask->start_time = date('Y-m-d H:i', strtotime(time()) + 1800) . ':00';
         $timedTask->result = 0;
         $timedTask->save();
 
