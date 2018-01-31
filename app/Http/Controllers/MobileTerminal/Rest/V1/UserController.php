@@ -143,8 +143,11 @@ class UserController extends BaseController
         $messages = Message::where('to_user_id', $user->id)->where('status', Message::STATUS_UNSENT)->orderBy('from_user_id', 'asc')
             ->orderBy('created_at', 'asc')->get();
 
+        Message::where('to_user_id', $user->id)->update('status', Message::STATUS_SENT);
+
         return self::success($messages);
     }
+
 
     //获取和其他某用的聊天记录
     public function getMessages($id, Request $request)
