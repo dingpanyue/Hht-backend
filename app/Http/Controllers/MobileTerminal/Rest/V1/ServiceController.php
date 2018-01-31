@@ -222,7 +222,7 @@ class ServiceController extends BaseController
         }
 
         //用户输入
-        $inputs = $request->only('reward', 'deadline');
+        $inputs = $request->only('reward', 'deadline', 'comment');
 
         $validator = app('validator')->make($inputs, [
             "reward" => "numeric|min:0",
@@ -252,13 +252,14 @@ class ServiceController extends BaseController
             $reward = $inputs['reward'];
         }
 
+        $comment = $inputs['comment'];
         $deadline = $inputs['deadline'];
 
         if ($service->status != Service::STATUS_PUBLISHED) {
             return self::notAllowed('无效的服务');
         }
 
-        $acceptedService= $this->serviceService->buyService($user->id, $service->id, $reward, $deadline);
+        $acceptedService= $this->serviceService->buyService($user->id, $service->id, $reward, $deadline, $comment);
 
         return self::success(AcceptedServiceTransformer::transform($acceptedService));
     }

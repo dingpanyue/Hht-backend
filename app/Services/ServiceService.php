@@ -135,7 +135,7 @@ class ServiceService
     }
 
     //购买服务
-    public function buyService($userId, $serviceId, $reward, $deadline)
+    public function buyService($userId, $serviceId, $reward, $deadline, $comment)
     {
         $service = self::getServiceById($serviceId);
 
@@ -153,7 +153,7 @@ class ServiceService
                 'reward' => $reward,
                 'deadline' => $deadline,
                 'status' => AcceptedService::STATUS_SUBMITTED,
-                'comment' => '',
+                'comment' => $comment,
             ]
         );
 
