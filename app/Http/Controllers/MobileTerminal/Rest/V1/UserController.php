@@ -140,7 +140,7 @@ class UserController extends BaseController
     {
         $user = $this->user;
 
-        $messages = Message::where('to_user_id', $user->id)->where('status', Message::STATUS_UNSENT)->orderBy('form_user_id', 'asc')
+        $messages = Message::where('to_user_id', $user->id)->where('status', Message::STATUS_UNSENT)->orderBy('from_user_id', 'asc')
             ->orderBy('created_ta', 'asc')->get();
 
         return self::success($messages);
