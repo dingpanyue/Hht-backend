@@ -254,6 +254,33 @@ class AssignmentController extends BaseController
         return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
     }
 
+    //取消自己接受 但未被采纳的委托
+    public function cancelAcceptedAssignment($id)
+    {
+        $user = $this->user;
+
+        /**
+         * @var $acceptedAssignment AcceptedAssignment
+         */
+        $acceptedAssignment = $this->acceptedAssignmentService->getAcceptedAssignmentById($id);
+
+        if (!$acceptedAssignment) {
+            return self::resourceNotFound();
+        }
+
+        if (!$acceptedAssignment->status == AcceptedAssignment::STATUS_SUBMITTED) {
+            return self::notAllowed();
+        }
+
+        if ($acceptedAssignment->serve_user_id != $user->id) {
+            return self::notAllowed();
+        }
+
+        $this->assignmentService->cancelAcceptedAssignment($acceptedAssignment);
+
+        return self::success();
+    }
+
     //采纳被接受的委托 assign_user
     public function adaptAcceptedAssignment($id)
     {

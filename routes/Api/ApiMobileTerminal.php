@@ -54,6 +54,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/upload/{id}', ['as' => 'Upload', 'uses' => 'AssignmentController@upload']);
         //接受委托
         Route::post('/accept/{id}', ['as' => '', 'uses' => 'AssignmentController@acceptAssignment']);
+        //取消接受 但未被采纳的委托
+        Route::post('/cancel-accepted/{id}', ['as' => '', 'uses' => 'AssignmentController@cancelAcceptedAssignment']);
         //采纳 接受的委托
         Route::post('/adapt/{id}', ['as' => '', 'uses' => 'AssignmentController@adaptAcceptedAssignment']);
         //告知完成  被采纳的 接收的委托

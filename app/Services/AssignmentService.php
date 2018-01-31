@@ -206,6 +206,17 @@ class AssignmentService
         return $acceptedAssignment;
     }
 
+    //取消我接受   但未被采纳的委托
+    public function cancelAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
+    {
+        $assignment = $acceptedAssignment->assignment;
+
+        $acceptedAssignment->delete();
+
+        $message = "有一条接受您发布的委托 $assignment->title 的申请已被取消";
+        GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
+    }
+
     //采纳接受的委托
     public function adaptAcceptedAssignment(AcceptedAssignment $acceptedAssignment)
     {
