@@ -141,7 +141,7 @@ class UserController extends BaseController
         $user = $this->user;
 
         $userModel = new User();
-        $users = $userModel->select('users.id', 'users.name', 'users.image')->join('messages', 'to_user_id','users.id')->where('to_user_id', $user->id)->where('messages.status', Message::STATUS_UNSENT)->get();
+        $users = $userModel->select('users.id', 'users.name', 'users.image')->leftJoin('messages', 'to_user_id','users.id')->where('to_user_id', $user->id)->where('messages.status', Message::STATUS_UNSENT)->get();
         $messages = Message::where('to_user_id', $user->id)->where('status', Message::STATUS_UNSENT)->orderBy('from_user_id', 'asc')
             ->orderBy('created_at', 'asc')->get();
 
