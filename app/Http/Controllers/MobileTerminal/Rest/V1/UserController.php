@@ -144,8 +144,9 @@ class UserController extends BaseController
         $users = $userModel->select('users.id', 'users.name', 'users.image')->leftJoin('messages', 'from_user_id','users.id')->where('to_user_id', $user->id)->where('messages.status', Message::STATUS_UNSENT)->groupBy('users.id')->get();
         $messages = Message::where('to_user_id', $user->id)->where('status', Message::STATUS_UNSENT)->orderBy('from_user_id', 'asc')
             ->orderBy('created_at', 'asc')->get();
+        $total = count($messages);
 
-        return self::success([$users, $messages]);
+        return self::success([$users, $messages, $total]);
     }
 
     public function offlineMessagesDealt()
