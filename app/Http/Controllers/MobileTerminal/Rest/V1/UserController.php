@@ -116,7 +116,7 @@ class UserController extends BaseController
 
         if ($id == 'self') {
             //获取余额
-            $balance = $userInfo->balance;
+            $balance = $userInfo?$userInfo->balance:0;
             $user->balance = $balance;
 
             //所有未读消息 数量
