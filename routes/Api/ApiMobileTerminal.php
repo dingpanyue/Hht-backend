@@ -38,14 +38,13 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     Route::get('/test_notify', 'UserController@systemMessage');
 
+    //委托列表  首页用
     Route::get('/assignments/index', ['as' => 'Index', 'uses' => 'AssignmentController@index']);
 
     //委托接口
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
         //获取所有委托的类目
         Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
-        //获取委托列表
-//        Route::get('/index', ['as' => 'Index', 'uses' => 'AssignmentController@index']);
         //获取单个委托详情
         Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
         //发布委托
