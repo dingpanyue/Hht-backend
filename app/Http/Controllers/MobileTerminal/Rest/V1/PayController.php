@@ -28,6 +28,7 @@ use App\Services\OrderService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use Symfony\Component\CssSelector\Exception\InternalErrorException;
+use EasyWeChat\Factory;
 
 class PayController extends BaseController
 {
@@ -537,11 +538,11 @@ class PayController extends BaseController
         $inputs = $request->only('method', 'amount');
 
         $validator = app('validator')->make($inputs, [
-            'method' => 'required|in:alipay,ws',
+            'method' => 'required|in:alipay,ws,bank',
             'amount' => 'required|numeric|min:0'
         ], [
             'method.required' => '提现方式必须填写',
-            'method.in' => '提现方式只能为微信或者支付宝',
+            'method.in' => '提现方式只能为微信或者支付宝或者银行卡',
             'amount.required' => '提现数额必须填写',
             'amount.numeric' => '提现数量必须为数字',
             'amount.min' => '提现金额必须大于0'
@@ -559,12 +560,62 @@ class PayController extends BaseController
         $method = $inputs['method'];
         $out_trade_no = 'Withdrawal' . time();
 
-
+        //提现到支付宝
         if ($method == 'alipay') {
             //必须有支付宝账户
             if (!($userAccount && $userAccount->alipay)) {
                 return self::notAllowed('您尚没有在账户中填写支付宝账户，无法提现到支付宝');
             }
+
+            try {
+                DB::transaction(function () use ($userInfo, $amount, $method, $out_trade_no, $userAccount) {
+                    //创建withdrawl
+                    $withdrawal = new Withdrawal();
+                    $withdrawal->method = $method;
+                    if ($method == 'alipay') {
+                        $withdrawal->account = $userAccount->alipay;
+                    }
+
+                    if ($method == 'wx') {
+                        $withdrawal->account = $userAccount->wechat;
+                    }
+                    $withdrawal->fee = $amount;
+                    $withdrawal->out_trade_no = $out_trade_no;
+                    $withdrawal->user_id = $userInfo->user_id;
+                    $withdrawal->status = Withdrawal::STATUS_PROCESSING;
+                    $withdrawal->save();
+
+                    //扣除余额
+                    $balance = UserInfo::where('id', $userInfo->id)->pluck('balance');
+                    $originBalance = $balance[0];
+                    $finalBalance = $originBalance - $amount;
+
+                    if ($finalBalance < 0) {
+                        throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH, self::CODE_BALANCE_NOTE_ENOUGH);
+                    }
+
+                    $userInfo->balance = $finalBalance;
+                    $userInfo->save();
+
+                    \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
+                    \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
+                    \Pingpp\Transfer::create(
+                        array(
+                            'order_no' => $out_trade_no,
+                            'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
+                            'channel' => $method,
+                            'amount' => $amount * 100,
+                            'currency' => 'cny',
+                            'type' => 'b2c',
+                            'recipient' => $userAccount->alipay,
+                            'description' => '行行通感谢您的使用'
+                        )
+                    );
+                });
+            } catch (\Exception $e) {
+                return self::error($e->getCode(), $e->getMessage());
+            }
+            return self::success("提现请求提交成功，请耐心等待");
         }
 
         if ($method == 'wx') {
@@ -574,56 +625,72 @@ class PayController extends BaseController
             }
         }
 
-        try {
-            DB::transaction(function () use ($userInfo, $amount, $method, $out_trade_no, $userAccount) {
-                //创建withdrawl
-                $withdrawal = new Withdrawal();
-                $withdrawal->method = $method;
-                if ($method == 'alipay') {
-                    $withdrawal->account = $userAccount->alipay;
-                }
+        //微信提现到银行卡
+        if ($method == 'bank') {
 
-                if ($method == 'wx') {
-                    $withdrawal->account = $userAccount->wechat;
-                }
-                $withdrawal->fee = $amount;
-                $withdrawal->out_trade_no = $out_trade_no;
-                $withdrawal->user_id = $userInfo->user_id;
-                $withdrawal->status = Withdrawal::STATUS_PROCESSING;
-                $withdrawal->save();
+            if (!($user->userInfo && $user->userInfo->real_name && $user->userAccount && $user->userAccount->bank_type && $user->userAccount->bank_account)) {
+                return self::notAllowed("请您完成实名认证，然后填写银行卡信息，才能提现到银行卡");
+            }
 
-                //扣除余额
-                $balance = UserInfo::where('id', $userInfo->id)->pluck('balance');
-                $originBalance = $balance[0];
-                $finalBalance = $originBalance - $amount;
+            $config = [
+                // 必要配置
+                'app_id'             => 'xxxx',
+                'mch_id'             => env('MCH_ID'),
+                'key'                => env('API_KEY'),   // API 密钥
 
-                if ($finalBalance < 0) {
-                    throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH, self::CODE_BALANCE_NOTE_ENOUGH);
-                }
+                // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
+                'cert_path'          => storage_path('apiclient_cert.pem'), // XXX: 绝对路径！！！！
+                'key_path'           => storage_path('apiclient_key.pem'),      // XXX: 绝对路径！！！！
 
-                $userInfo->balance = $finalBalance;
-                $userInfo->save();
+                // 将上面得到的公钥存放路径填写在这里
+                'rsa_public_key_path' => storage_path('public-1498230542.pem'), // <<<------------------------
 
-                \Pingpp\Pingpp::setApiKey(env('PINGPP_API_KEY'));
-                \Pingpp\Pingpp::setPrivateKeyPath(storage_path('private.key'));
-                \Pingpp\Transfer::create(
-                    array(
-                        'order_no' => $out_trade_no,
-                        'app' => array('id' => 'app_f5OCi9P80q1OnXL4'),
-                        'channel' => $method,
-                        'amount' => $amount * 100,
-                        'currency' => 'cny',
-                        'type' => 'b2c',
-                        'recipient' => $userAccount->alipay,
-                        'description' => '行行通感谢您的使用'
-                    )
-                );
-            });
-        } catch (\Exception $e) {
-            return self::error($e->getCode(), $e->getMessage());
+                'notify_url'         => '默认的订单回调地址',     // 你也可以在下单时单独设置来想覆盖它
+            ];
+
+            $app = Factory::payment($config);
+
+            try {
+                DB::transaction(function () use ($userInfo, $amount, $method, $out_trade_no, $userAccount, $app, $user) {
+                    //创建withdrawl
+                    $withdrawal = new Withdrawal();
+                    $withdrawal->method = $method;
+                    $withdrawal->fee = $amount;
+                    $withdrawal->out_trade_no = $out_trade_no;
+                    $withdrawal->user_id = $userInfo->user_id;
+                    $withdrawal->status = Withdrawal::STATUS_PROCESSING;
+                    $withdrawal->save();
+
+                    //扣除余额
+                    $balance = UserInfo::where('id', $userInfo->id)->pluck('balance');
+                    $originBalance = $balance[0];
+                    $finalBalance = $originBalance - $amount;
+
+                    if ($finalBalance < 0) {
+                        throw new \Exception(self::MESSAGE_BALANCE_NOT_ENGOUGH, self::CODE_BALANCE_NOTE_ENOUGH);
+                    }
+
+                    $userInfo->balance = $finalBalance;
+                    $userInfo->save();
+
+                    $result = $app->transfer->toBankCard([
+                        'partner_trade_no' => $out_trade_no,
+                        'enc_bank_no' => $user->userAccount->bank_account, // 银行卡号
+                        'enc_true_name' => $user->userInfo->real_name,   // 银行卡对应的用户真实姓名
+                        'bank_code' => $user->userAccount->bank_type, // 银行编号
+                        'amount' => $amount * 100,  // 单位：分
+                        'desc' => '提现',
+                    ]);
+
+                    if ($result['err_code'] != 'SUCCESS'){
+                        throw new \Exception($result['err_code_des']);
+                    }
+                });
+            } catch (\Exception $e){
+                return self::error(self::CODE_WECHAT_PAY_BANK_ERROR, $e->getMessage());
+            }
+            return self::success("提现申请成功，请耐心等待到账");
         }
-
-        return self::success("提现请求提交成功，请耐心等待");
     }
 }
 

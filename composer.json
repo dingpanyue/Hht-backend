@@ -6,12 +6,14 @@
     "type": "project",
     "require": {
         "php": ">=5.6.4",
+        "easywechat/console": "^1.0",
         "encore/laravel-admin": "1.4.*",
         "flc/dysms": "^1.0",
         "laravel/framework": "5.4.*",
         "laravel/passport": "^4.0",
         "laravel/tinker": "~1.0",
         "lyt8384/pingpp-laravel5-plus": "dev-master",
+        "overtrue/laravel-wechat": "^4.0",
         "workerman/gateway-worker": "^3.0",
         "yansongda/laravel-pay": "^1.0"
     },

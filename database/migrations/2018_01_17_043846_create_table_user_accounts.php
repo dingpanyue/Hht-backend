@@ -21,6 +21,8 @@ class CreateTableUserAccounts extends Migration
             $table->string('alipay')->nullable()->comment('支付宝账户');
             $table->string('wechat')->nullable()->comment('微信openid');
             $table->string('password')->nullable()->index()->comment('支付密码');
+            $table->string('bank_account')->nullable()->comment('银行账户');
+            $table->integer('bank_type')->nullable()->comment('账户类型');
             $table->timestamps();
         });
     }

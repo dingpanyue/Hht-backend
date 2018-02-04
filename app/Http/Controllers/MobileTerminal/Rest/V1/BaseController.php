@@ -55,6 +55,8 @@ class BaseController extends Controller
     const MESSAGE_BALANCE_NOT_ENGOUGH = "账户余额不足";
 
 
+    const CODE_WECHAT_PAY_BANK_ERROR = 207000;            //微信提现错误
+
 
     /**
      * 获取请求所要求的版本号
