@@ -595,7 +595,7 @@ class UserController extends BaseController
         $recommendUsers = $user->join('user_talents', 'user_talents.user_id', 'users.id')
             ->select('users.id', 'users.name', 'users.image')->where('users.id','!=', $user->id)
             ->where('user_talents.classification', $assignment->classification)
-            ->limit(3)->get();
+            ->limit(5)->get();
 
         return self::success($recommendUsers);
     }
