@@ -118,19 +118,8 @@ class UserController extends BaseController
             //获取余额
             $balance = $userInfo?$userInfo->balance:0;
             $user->balance = $balance;
-
-            //所有未读消息 数量
-            $Messages = Message::select('from_user_id', DB::raw('count(*) as total'))
-                ->where('to_user_id', $user->id)->where('from_user_id', '!=', $user->id)
-                ->where('status', '!=', Message::STATUS_SEEN)
-                ->with('fromUser')
-                ->groupBy('from_user_id')
-                ->get();
-
-            $user->messages = $Messages;
-
             $userAccount = $user->userAccount;
-            $user->userccount = $userAccount;
+            $user->userAccount = $userAccount;
         }
 
         return self::success($user);
@@ -543,4 +532,54 @@ class UserController extends BaseController
         }
         return self::success($User);
     }
+
+    //获取银行参数
+    public function banks()
+    {
+        $banks = cache('banks');
+        if (!$banks) {
+            $userAccount = new UserAccount();
+            $banks = $userAccount->bankArray;
+            cache(['banks' => $banks], 36000);
+        }
+        return $banks;
+    }
+
+    //设置银行卡
+    public function setBankAccount(Request $request)
+    {
+        $user = $this->user;
+
+        if (!$user->userInfo) {
+            return self::notAllowed("请先完成实名认证");
+        }
+
+        $inputs = $request->only('bank_type', 'bank_account');
+
+        $validator = $validator = app('validator')->make($inputs, [
+            'bank_type' => 'required|integer',
+            'bank_account' => 'required'
+        ], [
+            'bank_type.required' => '请选择银行卡类型',
+            'bank_type.integer' => '请选择正确的银行卡类型'
+        ]);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        $userAccount = $user->userAccount;
+        if (!$userAccount) {
+            $userAccount = new UserAccount();
+            $userAccount->user_id = $user->id;
+        }
+
+        $userAccount->bank_account = $inputs['bank_account'];
+        $userAccount->bank_type = $inputs['bank_type'];
+
+        $userAccount->save();
+
+        return self::success($userAccount);
+    }
+
 }

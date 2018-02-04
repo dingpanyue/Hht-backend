@@ -149,6 +149,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/offline-messages', ['as' => '', 'uses' => 'UserController@offlineMessages']);
         //处理完离线消息的回调
         Route::post('/offline-messages-dealt', ['as' => '', 'uses' => 'UserController@offlineMessagesDealt']);
+        //获取各种银行编号
+        Route::get('/banks', ['as' => '', 'uses' => 'UserController@banks']);
+        //设置用户银行卡号
+        Route::post('/bank_account', ['as' => '', 'uses' => 'UserController@setBankAccount']);
     });
 
     //支付接口

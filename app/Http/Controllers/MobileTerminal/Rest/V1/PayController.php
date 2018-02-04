@@ -527,7 +527,7 @@ class PayController extends BaseController
     }
 
 
-    //Pingpp 提现接口
+    //提现接口        从微信到银行卡是原生       从pingpp到支付宝是pingpp
     public function withdrawals(Request $request)
     {
         //获取提现用户
