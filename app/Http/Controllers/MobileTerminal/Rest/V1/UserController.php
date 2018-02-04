@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
+use App\Models\Assignment;
 use App\Models\Message;
 use App\Models\User;
 use App\Models\UserAccount;
@@ -580,6 +581,23 @@ class UserController extends BaseController
         $userAccount->save();
 
         return self::success($userAccount);
+    }
+
+    public function getRecommendUsers()
+    {
+        $user =$this->user;
+        $assignment = Assignment::where('user_id', $user->id)->orderBy('created_at','desc')->first();
+
+        if (!$assignment) {
+            return self::notAllowed("该用户并没有发布委托");
+        }
+        $user = new User();
+        $recommendUsers = $user->join('user_talents', 'user_talents.user_id', 'users.id')
+            ->select('users.id', 'users.name', 'users.image')->where('users.id','!=', $user->id)
+            ->where('user_talents.classification', $assignment->classification)
+            ->limit(3)->get();
+
+        return self::success($recommendUsers);
     }
 
 }

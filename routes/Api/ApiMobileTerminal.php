@@ -153,6 +153,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/banks', ['as' => '', 'uses' => 'UserController@banks']);
         //设置用户银行卡号
         Route::post('/bank_account', ['as' => '', 'uses' => 'UserController@setBankAccount']);
+        //获取推荐用户
+        Route::get('/recommend-users', ['as' => '', 'uses' => 'UserController@getRecommendUsers']);
     });
 
     //支付接口
