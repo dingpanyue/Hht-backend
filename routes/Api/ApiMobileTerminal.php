@@ -26,6 +26,10 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     Route::get('/arbitrated-services', ['as' => '', 'uses' => 'ServiceController@ArbitratedServices']);
     //获取所有种菜中的委托列表
     Route::get('/arbitrated-assignments', ['as' => '', 'uses' => 'AssignmentController@ArbitratedAssignments']);
+    //获取所有委托的类目
+    Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
+    //获取委托列表
+    Route::get('/services/index', ['as' => 'Index', 'uses' => 'ServiceController@index']);
 
     Route::group(['prefix' => 'regions'], function (){
         //省份
@@ -43,8 +47,6 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     //委托接口
     Route::group(['prefix' => 'assignments' , 'middleware' => 'auth:api'], function() {
-        //获取所有委托的类目
-        Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
         //获取单个委托详情
         Route::get('/{id}/detail', ['as' => 'Detail', 'uses' => 'AssignmentController@detail']);
         //发布委托
@@ -69,8 +71,6 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
 
     //服务接口
     Route::group(['prefix' => 'services', 'middleware' => 'auth:api'], function () {
-        //获取委托列表
-        Route::get('/index', ['as' => 'Index', 'uses' => 'ServiceController@index']);
         //获取所有服务的类目
         Route::get('/classifications', ['as' => 'Categories', 'uses' => 'AssignmentController@classifications']);
         //获取单个服务详情
@@ -165,6 +165,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/refund/{type}/{pk}', ['as' => '', 'uses' => 'PayController@refund']);
         //提现接口
         Route::post('/withdrawal', ['as' => 'Withdrawals', 'uses' => 'PayController@withdrawals']);
+        //查询微信到的银行卡提现
+        Route::get('/bank-pay/{trade_no}', ['as' => '', 'uses' => 'PayController@queryWxBankPay']);
     });
 
 
