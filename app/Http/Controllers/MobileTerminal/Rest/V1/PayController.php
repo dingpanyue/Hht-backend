@@ -158,6 +158,9 @@ class PayController extends BaseController
 
         //判断余额支付 如果够  则 直接处理订单
         if ($method == Order::BALANCE) {
+            if (!($user->userAccount && $user->userAccount->password)) {
+                return self::notAllowed('请先去您的钱包设置支付密码');
+            }
             if (!$input['code']) {
                 return self::parametersIllegal("请输入您的支付密码");
             }
@@ -685,12 +688,41 @@ class PayController extends BaseController
                     if ($result['err_code'] != 'SUCCESS'){
                         throw new \Exception($result['err_code_des']);
                     }
+
+                    //创建定时任务检验退款
+                    $timedTask = new TimedTask();
+                    $timedTask->name = "提现 $withdrawal->id 已经三天";
+                    $timedTask->command = "check $withdrawal->id";
+                    $timedTask->start_time = date('Y-m-d H:i', strtotime('now + 3 days')) . ':00';
+                    $timedTask->result = 0;
+                    $timedTask->save();
                 });
             } catch (\Exception $e){
                 return self::error(self::CODE_WECHAT_PAY_BANK_ERROR, $e->getMessage());
             }
             return self::success("提现申请成功，请耐心等待到账");
         }
+    }
+
+    public function queryWxBankPay($outTradeNo)
+    {
+        $config = [
+            // 必要配置
+            'app_id'             => 'xxxx',
+            'mch_id'             => env('MCH_ID'),
+            'key'                => env('API_KEY'),   // API 密钥
+
+            // 如需使用敏感接口（如退款、发送红包等）需要配置 API 证书路径(登录商户平台下载 API 证书)
+            'cert_path'          => storage_path('apiclient_cert.pem'), // XXX: 绝对路径！！！！
+            'key_path'           => storage_path('apiclient_key.pem'),      // XXX: 绝对路径！！！！
+
+            // 将上面得到的公钥存放路径填写在这里
+            'rsa_public_key_path' => storage_path('public-1498230542.pem'), // <<<------------------------
+
+            'notify_url'         => '默认的订单回调地址',     // 你也可以在下单时单独设置来想覆盖它
+        ];
+
+        $app = Factory::payment($config);
     }
 }
 
