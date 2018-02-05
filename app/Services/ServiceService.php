@@ -62,7 +62,6 @@ class ServiceService
     {
         $params = array_filter($params);
 
-        dd(date('Y-m-d H:i:s'));
         $services = $this->serviceEloqument->with('user')->with('user.userInfo')->where('status', $status)->whereDate('expired_at', '>', date('Y-m-d H:i:s'));
         if (isset($params['classification'])) {
             $services = $services->where('classification', $params['classification']);
