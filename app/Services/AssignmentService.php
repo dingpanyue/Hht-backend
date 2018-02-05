@@ -90,7 +90,7 @@ class AssignmentService
     {
         $params = array_filter($params);
 
-        $assignments = $this->assignmentEloqument->with('user')->with('user.userInfo')->where('status', $status)->whereDate('expired_at', '>', date('Y-m-d H:i:s'));
+        $assignments = $this->assignmentEloqument->with('user')->with('user.userInfo')->where('status', $status)->where('expired_at', '>', date('Y-m-d H:i:s'));
 
         if (isset($params['classification'])) {
             $assignments = $assignments->where('classification', $params['classification']);
