@@ -67,7 +67,7 @@ class ServiceService
             $services = $services->where('classification', $params['classification']);
         }
         if (isset($params['keyword'])) {
-            $services = $services->where('title', 'like', $params['keyword']);
+            $services = $services->where('title', 'like', '%'.$params['keyword'].'%');
         }
         $orderBy = 'created_at';
         $order = 'desc';

@@ -97,7 +97,7 @@ class AssignmentService
         }
 
         if (isset($params['keyword'])) {
-            $assignments = $assignments->where('title', 'like', $params['keyword']);
+            $assignments = $assignments->where('title', 'like', '%'.$params['keyword'].'%');
         }
 
         $orderBy = 'created_at';
