@@ -17,7 +17,7 @@ class AssignmentTransformer
 
         $statuses = [
             Assignment::STATUS_UNPAID => '未支付',
-            Assignment::STATUS_WAIT_ACCEPT => '待接受',
+            Assignment::STATUS_WAIT_ACCEPT => '待选择服务方',
             Assignment::STATUS_ADAPTED => '已采纳',
             Assignment::STATUS_CANCELED => '已取消',
             Assignment::STATUS_FINISHED => '已完成',
