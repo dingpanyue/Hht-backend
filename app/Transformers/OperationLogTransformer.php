@@ -14,7 +14,7 @@ class OperationLogTransformer
 {
     public static $operations = [
         OperationLog::OPERATION_CREATE => '创建',          //创建，即发布  委托 或者 服务
-        OperationLog::OPERATION_BUY => '购买服务',                //购买服务
+        OperationLog::OPERATION_BUY => '申请购买',                //购买服务
         OperationLog::OPERATION_PAY => '支付',                //支付
         OperationLog::OPERATION_ACCEPT => '接受',         //接受，即接受  委托 或则 服务
         OperationLog::OPERATION_ADAPT => '采纳',           //采纳，采纳 被接受的委托 或者 服务
