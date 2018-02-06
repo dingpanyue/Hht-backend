@@ -446,6 +446,7 @@ class PayController extends BaseController
 
                 foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
                     $message = "由于委托 $assignment->title 已经申请退款， 您接受该委托的申请已失效，系统帮您自动删除";
+                    AcceptedAssignment::where('parent_id', $assignment->id)->delete();
                     GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
                 }
 
@@ -455,7 +456,6 @@ class PayController extends BaseController
 
 
                     DB::transaction(function () use ($order, $user, $assignment) {
-                        AcceptedAssignment::where('parent_id', $assignment->id)->delete();
                         //返回余额
                         $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
                         $originBalance = $balance[0];
