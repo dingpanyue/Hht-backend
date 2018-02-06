@@ -455,8 +455,7 @@ class PayController extends BaseController
 
 
                     DB::transaction(function () use ($order, $user, $assignment) {
-
-
+                        AcceptedAssignment::where('parent_id', $assignment->id)->delete();
                         //返回余额
                         $balance = UserInfo::where('user_id', $user->id)->pluck('balance');
                         $originBalance = $balance[0];
