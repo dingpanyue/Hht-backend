@@ -51,7 +51,7 @@ class AcceptedServiceService
 
     public function getAcceptedServicesByServeUser(User $user, $status = 'all')
     {
-        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('serve_user_id', $user->id)->orderBy('status', 'asc');
+        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('serve_user_id', $user->id)->orderBy('updated_at', 'desc');
 
         if ($status != 'all') {
             $acceptedServices = $acceptedServices->where('status', $status);
