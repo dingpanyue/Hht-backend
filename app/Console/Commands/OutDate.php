@@ -321,7 +321,7 @@ class OutDate extends Command
                         $order->save();
 
 
-                        $message = "您提供的服务由于超过期限没有申请完成，服务已失败";
+                        $message = "您提供的服务由于超过期限没有申请完成，服务已失败,以扣除您的服务积分";
                         GatewayWorkerService::sendSystemMessage($message, $acceptedService->serve_user_id);
 
                         $message = "您购买的服务由于服务方超过期限未提交完成，服务已失败,退款正在处理中";
