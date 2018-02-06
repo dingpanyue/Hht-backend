@@ -41,7 +41,7 @@ class ServiceService
     //我发布的服务
     public function getServicesByUser(User $user, $status = 'all')
     {
-        $services = $this->serviceEloqument->with('acceptedServicesCommitted')->where('user_id', $user->id)->where('expired_at', '>', date('Y-m-d H:i:s'))->orderBy('status', 'asc');
+        $services = $this->serviceEloqument->with('acceptedServicesCommitted')->where('user_id', $user->id)->where('expired_at', '>', date('Y-m-d H:i:s'))->orderBy('status', 'desc')->orderBy('updated_at', 'asc');
 
         if ($status != 'all') {
             $services->where('status', $status);
