@@ -157,7 +157,7 @@ class ServiceController extends BaseController
             "reward.min" => "服务报酬必须大于0",
             "reward.numeric" => "服务报酬必须为数字",
             "expired_at.date" => "服务过期时间格式不正确",
-            "expired_at.after" => "服务过期时间不合理"
+            "expired_at.after" => $inputs['expired_at']
         ]);
 
         if ($validator->fails()) {
