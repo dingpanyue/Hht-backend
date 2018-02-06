@@ -70,7 +70,7 @@ class AssignmentController extends BaseController
         //当前登陆用户
         $user = $this->user;
 
-        if (!$user->userInfo && $user->userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
+        if (!$user->userInfo) {
             return self::notAllowed('您还没完成实名认证，无法发布委托');
         }
 
@@ -202,7 +202,7 @@ class AssignmentController extends BaseController
     public function acceptAssignment($assignmentId, Request $request)
     {
         $user = $this->user;
-        if (!$user->userInfo && $user->userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
+        if (!$user->userInfo) {
             return self::notAllowed('您还没完成实名认证，无法接受委托');
         }
 
