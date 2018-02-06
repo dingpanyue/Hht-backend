@@ -69,6 +69,11 @@ class AssignmentController extends BaseController
     {
         //当前登陆用户
         $user = $this->user;
+
+        if (!$user->userInfo && $user->userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
+            return self::notAllowed('您还没完成实名认证，无法发布委托');
+        }
+
         //用户输入
         $inputs = $request->only('title', 'classification', 'introduction', 'province_id', 'city_id', 'area_id',
             'lng', 'lat', 'detail_address', 'reward', 'expired_at', 'deadline', 'comment');
