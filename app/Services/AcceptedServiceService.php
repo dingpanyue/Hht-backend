@@ -39,7 +39,7 @@ class AcceptedServiceService
     //获取我作为购买人， 购买或准备购买的accpetedService
     public function getAcceptedServicesByUser(User $user, $status = 'all')
     {
-        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('assign_user_id', $user->id)->orderBy('status', 'asc');
+        $acceptedServices = $this->acceptedServiceEloqument->with('service')->where('assign_user_id', $user->id)->orderBy('updated_at', 'desc');
 
         if ($status != 'all') {
             $acceptedServices = $acceptedServices->where('status', $status);
