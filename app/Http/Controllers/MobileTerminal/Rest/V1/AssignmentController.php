@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\AssignmentClassification;
 use App\Models\GlobalConfig;
 use App\Models\User;
+use App\Models\UserInfo;
 use App\Models\UserTalent;
 use App\Services\AcceptedAssignmentService;
 use App\Services\AssignmentService;
@@ -196,6 +197,9 @@ class AssignmentController extends BaseController
     public function acceptAssignment($assignmentId, Request $request)
     {
         $user = $this->user;
+        if (!$user->userInfo && $user->userInfo->status == UserInfo::STATUS_AUTHENTICATED) {
+            return self::notAllowed('您还没完成实名认证，无法接受委托');
+        }
 
         /**
          * @var $assignment Assignment
