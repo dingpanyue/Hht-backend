@@ -523,6 +523,7 @@ class UserController extends BaseController
 
         $User->editable = $editable;
 
+        dd($user->userTalents);
         if (count($user->userTalents)) {
             $classifications = Helper::transformToKeyValue(app('assignment_classifications'), 'id', 'name');
             $User->userTalents = $User->userTalents()->pluck('classification');
