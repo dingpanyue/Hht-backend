@@ -130,7 +130,7 @@ class AssignmentService
 
             $assignments = $nearbyAssignments;
         } else {
-            $assignments = $assignments->orderBy($orderBy, $order)->paginate('20');
+            $assignments = $assignments->orderBy($orderBy, $order)->paginate(isset($params['per_page'])?$params['per_page']:20);
         }
 
         return $assignments;
