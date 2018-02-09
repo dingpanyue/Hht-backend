@@ -100,6 +100,10 @@ class AssignmentService
             $assignments = $assignments->where('title', 'like', '%'.$params['keyword'].'%');
         }
 
+        if (isset($params['area_id'])) {
+            $assignments = $assignments->where('area_id', $params['area_id']);
+        }
+
         $orderBy = 'created_at';
         $order = 'desc';
 

@@ -57,7 +57,7 @@ class AssignmentController extends BaseController
      */
     public function index(Request $request)
     {
-        $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat');
+        $inputs = $request->only('classification', 'keyword', 'order_by', 'order', 'near_by', 'lng', 'lat','area_id');
         $assignments = $this->assignmentService->getList($inputs);
         $assignments = AssignmentTransformer::transformList($assignments);
         return self::success($assignments);
