@@ -14,7 +14,7 @@ class CreateTableServiceTags extends Migration
     public function up()
     {
         //
-        Schema::create('assignment_tags', function(Blueprint $table)
+        Schema::create('service_tags', function(Blueprint $table)
         {
             $table->increments('id');
             $table->integer('service_id')->comment('服务id');
