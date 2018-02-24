@@ -40,6 +40,7 @@ class AssignmentService
 
         $classification = $params['classification'];
         $classifications = explode(',', $classification);
+        dd($classifications);
         unset($params['classification']);
 
         $assignment = new Assignment();
