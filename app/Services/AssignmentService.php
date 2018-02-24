@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
+use App\Models\AssignmentTag;
 use App\Models\OperationLog;
 use App\Models\Order;
 use App\Models\TimedTask;
@@ -36,6 +37,11 @@ class AssignmentService
     public function create($userId, $params, $status = Assignment::STATUS_UNPAID)
     {
         unset($params['status']);
+
+        $classification = $params['classification'];
+        $classifications = explode(',', $classification);
+        unset($params['classification']);
+
         $assignment = new Assignment();
         $params = array_merge($params, ['user_id' => $userId, 'status' => $status]);
 
@@ -43,6 +49,14 @@ class AssignmentService
             $assignment = $assignment->create(
                 $params
             );
+
+            foreach ($classifications as $classification) {
+                $assignmentTag = new AssignmentTag();
+                $assignmentTag->assignment_id = $assignment->id;
+                $assignmentTag->classification = $classification;
+                $assignmentTag->save();
+            }
+
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode());
         }

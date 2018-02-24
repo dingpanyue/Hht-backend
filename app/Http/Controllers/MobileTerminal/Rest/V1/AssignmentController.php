@@ -5,6 +5,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\AssignmentClassification;
+use App\Models\AssignmentTag;
 use App\Models\GlobalConfig;
 use App\Models\User;
 use App\Models\UserInfo;
@@ -86,7 +87,7 @@ class AssignmentController extends BaseController
 
         $validator = $validator = app('validator')->make($inputs, [
             "title" => "required|max:{$globalConfigs['assignment_title_limit']}",
-            "classification" => "required|integer|in:$classificationString",
+            "classification" => "required",
             "province_id" => "required|integer",
             "city_id" => "required|integer",
             "area_id" => "required|integer",
@@ -100,7 +101,6 @@ class AssignmentController extends BaseController
             "title.required" => "委托标题必须填写",
             "title.max" => "委托标题必须在{$globalConfigs['assignment_title_limit']}以内",
             "classification.required" => "委托分类必须填写",
-            "classification.in" => "请选择正确的委托分类",
             "province_id.required" => "省份必须选择",
             "province_id.integer" => "请选择正确的省份",
             "city_id.required" => "城市必须选择",
@@ -122,9 +122,12 @@ class AssignmentController extends BaseController
             "expired_at.after" => "委托过期时间不合理"
         ]);
 
-        if ($inputs['deadline'] < $inputs['expired_at']) {
-            return self::parametersIllegal("委托期限必须大于截止时间");
-        }
+
+
+        //两个时间统一处理了
+//        if ($inputs['deadline'] < $inputs['expired_at']) {
+//            return self::parametersIllegal("委托期限必须大于截止时间");
+//        }
 
         if ($validator->fails()) {
             return self::parametersIllegal($validator->messages()->first());
