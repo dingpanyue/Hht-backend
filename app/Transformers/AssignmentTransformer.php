@@ -30,13 +30,12 @@ class AssignmentTransformer
         }
 
         if (!$assignment->classifications()) {
-            $assignment->classifications = collect($assignment->classifications()->get('classification'))->toArray();
+            $assignment->classifications = $assignment->classifications()->get('classification');
         }
 
-        dd($assignment->classifications);
         $classificationsArray = [];
         foreach ($assignment->classifications as $classification) {
-            $classifications[] = $classifications[$classification];
+            $classifications[] = $classifications[$classification->classification];
         }
         $assignment->classifications = $classificationsArray;
 
