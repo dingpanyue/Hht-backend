@@ -33,6 +33,7 @@ class AssignmentTransformer
             $assignment->classifications = collect($assignment->classifications()->get('classification'))->pluck('classification');
         }
 
+        dd($assignment->classifications());
         $classificationsArray = [];
         foreach ($assignment->classifications as $classification) {
             $classifications[] = $classifications[$classification];
