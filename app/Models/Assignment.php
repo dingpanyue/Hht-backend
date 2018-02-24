@@ -74,4 +74,9 @@ class Assignment extends Model
     {
         return $this->hasOne(AcceptedAssignment::class, 'id', 'adapted_assignment_id');
     }
+
+    public function classifications()
+    {
+        return $this->hasMany(AssignmentTag::class, 'assignment_id', 'id');
+    }
 }
