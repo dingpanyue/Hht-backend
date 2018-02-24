@@ -64,6 +64,6 @@ class Service extends Model
 
     public function classifications()
     {
-        return $this->hasMany(Service::class,'service_id', 'id');
+        return $this->hasMany(ServiceTag::class,'service_id', 'id');
     }
 }
