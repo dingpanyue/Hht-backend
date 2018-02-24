@@ -35,6 +35,7 @@ class AssignmentTransformer
 
         $classificationsArray = [];
 
+        dd($assignment->classifications);
         foreach ($assignment->classifications as $classification) {
             $classificationsArray[] = $classifications[$classification->classification];
         }
