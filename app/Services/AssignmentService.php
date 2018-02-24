@@ -107,7 +107,12 @@ class AssignmentService
         $assignments = $this->assignmentEloqument->with('user')->with('user.userInfo')->where('status', $status)->where('expired_at', '>', date('Y-m-d H:i:s'));
 
         if (isset($params['classification'])) {
-            $assignments = $assignments->where('classification', $params['classification']);
+            $classifications = explode(',', $params['classification']);
+            $assignments = $assignments->whereHas('classifications',function($query) use ($classifications) {
+                foreach ($classifications as $classification) {
+                    $query->orWhere('classification','classification');
+                }
+            });
         }
 
         if (isset($params['keyword'])) {
