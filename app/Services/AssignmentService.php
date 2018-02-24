@@ -110,7 +110,7 @@ class AssignmentService
             $classifications = explode(',', $params['classification']);
             $assignments = $assignments->whereHas('classifications',function($query) use ($classifications) {
                 foreach ($classifications as $classification) {
-                    $query->orWhere('classification','classification');
+                    $query->where('classification',$classification);
                 }
             });
         }
