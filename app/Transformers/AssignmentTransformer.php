@@ -30,7 +30,7 @@ class AssignmentTransformer
         }
 
         if (!$assignment->classifications()) {
-            $assignment->classifications = $assignment->classifications()->get('classification');
+            $assignment->classifications = collect($assignment->classifications()->get('classification'))->pluck('classification');
         }
 
         $classificationsArray = [];
