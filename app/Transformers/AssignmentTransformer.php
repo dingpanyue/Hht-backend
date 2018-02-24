@@ -29,7 +29,16 @@ class AssignmentTransformer
             $assignment->apply_count = count($assignment->acceptedAssignments);
         }
 
-        $assignment->classifications = $assignment->classifications()->get();
+        if (!$assignment->classifications()) {
+            $assignment->classifications = $assignment->classifications()->pluck('classification');
+        }
+
+        $classificationsArray = [];
+        foreach ($assignment->classifications as $classification) {
+            $classifications[] = $classifications[$assignment->classification];
+        }
+        $assignment->classifications = $classificationsArray;
+
         $assignment->status = $statuses[$assignment->status];
 
         if ($assignment->acceptedAssignments) {
