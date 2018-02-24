@@ -64,9 +64,14 @@ class ServiceService
         $params = array_filter($params);
 
         $services = $this->serviceEloqument->with('user')->with('user.userInfo')->where('status', $status)->where('expired_at', '>', date('Y-m-d H:i:s'));
+
         if (isset($params['classification'])) {
-            $services = $services->where('classification', $params['classification']);
+            $classification = $params['classification'];
+            $services = $services->whereHas('classifications',function($query) use ($classification) {
+                $query->where('classification',$classification);
+            });
         }
+
         if (isset($params['keyword'])) {
             $services = $services->where('title', 'like', '%'.$params['keyword'].'%');
         }
