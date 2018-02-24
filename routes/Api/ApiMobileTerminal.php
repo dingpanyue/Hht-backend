@@ -155,6 +155,9 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/bank_account', ['as' => '', 'uses' => 'UserController@setBankAccount']);
         //获取推荐用户
         Route::get('/recommend-users', ['as' => '', 'uses' => 'UserController@getRecommendUsers']);
+        //用户隐私设置
+        Route::post('/user-configs', ['as' => '', 'uses' => 'UserController@setUserConfigs']);
+        //
     });
 
     //支付接口

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Models\Assignment;
+use App\Models\AssignmentTag;
 use App\Models\Message;
 use App\Models\User;
 use App\Models\UserAccount;
 use App\Models\UserAddress;
 use App\Models\UserCenter;
+use App\Models\UserConfig;
 use App\Models\UserInfo;
 use App\Models\UserTalent;
 use App\Services\AddressService;
@@ -513,6 +515,7 @@ class UserController extends BaseController
     public function userCenter($id)
     {
         $user = $this->user;
+
         $User = User::where('id', $id)->with('userInfo')->with('userCenter')->with('userTalents')->first();
 
         if($user->id == $id) {
@@ -587,17 +590,41 @@ class UserController extends BaseController
     {
         $user =$this->user;
         $assignment = Assignment::where('user_id', $user->id)->orderBy('created_at','desc')->first();
+        $classificationTag = AssignmentTag::where('assignment_id', $assignment->id)->first();
+        $classification = $classificationTag->classification;
 
         if (!$assignment) {
             return self::notAllowed("该用户并没有发布委托");
         }
+
         $user = new User();
         $recommendUsers = $user->join('user_talents', 'user_talents.user_id', 'users.id')
             ->select('users.id', 'users.name', 'users.image')->where('users.id','!=', $user->id)
-            ->where('user_talents.classification', $assignment->classification)
+            ->where('user_talents.classification', $classification)
             ->limit(5)->get();
 
         return self::success($recommendUsers);
+    }
+
+    public function setUserConfigs(Request $request)
+    {
+        $user =$this->user;
+        $inputs = $request->only('show_mobile', 'show_region', 'show_address');
+
+        $userConfig = $user->configs;
+
+        if (!$userConfig) {
+            $userConfig = new UserConfig();
+            $userConfig->user_id = $user->id;
+        }
+
+        $userConfig->show_mobile = $inputs['show_mobile'];
+        $userConfig->show_region = $inputs['show_region'];
+        $userConfig->show_address = $inputs['show_address'];
+
+        $userConfig->save();
+
+        return self::success($userConfig);
     }
 
 }

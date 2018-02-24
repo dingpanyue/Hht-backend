@@ -56,4 +56,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserTalent::class, 'user_id');
     }
+
+    public function configs()
+    {
+        return $this->hasOne(UserConfig::class, 'user_id');
+    }
 }
