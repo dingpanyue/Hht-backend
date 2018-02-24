@@ -6,6 +6,7 @@ use App\Models\AcceptedService;
 use App\Models\OperationLog;
 use App\Models\Order;
 use App\Models\Service;
+use App\Models\ServiceTag;
 use App\Models\TimedTask;
 use App\Models\User;
 use Exception;
@@ -101,6 +102,12 @@ class ServiceService
     public function create($userId, $params, $status = Service::STATUS_PUBLISHED)
     {
         unset($params['status']);
+
+        $classification = $params['classification'];
+        $classifications = explode(',', $classification);
+        unset($params['classification']);
+
+
         $service = new Service();
         $params = array_merge($params, ['user_id' => $userId, 'status' => $status]);
 
@@ -108,6 +115,13 @@ class ServiceService
             $service = $service->create(
                 $params
             );
+
+            foreach ($classifications as $classification) {
+                $serviceTag = new ServiceTag();
+                $serviceTag->service_id = $service->id;
+                $serviceTag->classification = $classification;
+                $serviceTag->save();
+            }
         } catch (\Exception $e) {
             throw new Exception($e->getMessage(), $e->getCode());
         }

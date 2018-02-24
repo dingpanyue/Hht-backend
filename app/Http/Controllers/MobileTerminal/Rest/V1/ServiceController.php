@@ -126,7 +126,7 @@ class ServiceController extends BaseController
 
         $validator = app('validator')->make($inputs, [
             "title" => "required|max:{$globalConfigs['assignment_title_limit']}",
-            "classification" => "required|integer|in:$classificationString",
+            "classification" => "required",
             "province_id" => "required|integer",
             "city_id" => "required|integer",
             "area_id" => "required|integer",
@@ -138,7 +138,6 @@ class ServiceController extends BaseController
             "title.required" => "服务标题必须填写",
             "title.max" => "服务标题必须在{$globalConfigs['assignment_title_limit']}以内",
             "classification.required" => "服务分类必须填写",
-            "classification.in" => "请选择正确的服务分类",
             "province_id.required"=> "省份必须选择",
             "province_id.integer" => "请选择正确的省份",
             "city_id.required" => "城市必须选择",

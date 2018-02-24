@@ -23,7 +23,17 @@ class ServiceTransformer
 
         $statuses = self::$statuses;
 
-        $service->classification = $classifications[$service->classification];
+        if (!$service->classifications) {
+            $service->classifications = $service->classifications()->get()->pluck('classification');
+        }
+
+        $classificationsArray = [];
+
+        foreach ($service->classifications as $classification) {
+            $classificationsArray[] = $classifications[$classification->classification];
+        }
+
+        $service->tags = $classificationsArray;
         $service->status = $statuses[$service->status];
 
         if($includeAcceptedServices) {

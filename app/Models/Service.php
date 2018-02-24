@@ -61,4 +61,9 @@ class Service extends Model
         return $this->hasMany(AcceptedService::class,'parent_id')->where('status', AcceptedService::STATUS_SUBMITTED)
             ->where('deadline', '>', date('Y-m-d H:i:s'));
     }
+
+    public function classifications()
+    {
+        return $this->hasMany(Service::class,'service_id', 'id');
+    }
 }
