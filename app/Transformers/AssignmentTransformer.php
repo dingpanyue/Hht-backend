@@ -39,7 +39,7 @@ class AssignmentTransformer
             $classificationsArray[] = $classifications[$classification->classification];
         }
 
-        $assignment->classifications = $classificationsArray;
+        $assignment->tags = $classificationsArray;
 
         $assignment->status = $statuses[$assignment->status];
 
