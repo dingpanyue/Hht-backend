@@ -516,8 +516,14 @@ class UserController extends BaseController
     {
         $user = $this->user;
 
+        $configs = $user->configs;
+
+
         $User = User::where('id', $id)->with('userInfo')->with('userCenter')->with('userTalents')->first();
 
+        if ($configs && !$configs->show_mobile) {
+            $User->mobile = '**********';
+        }
         if($user->id == $id) {
             $editable = true;
         } else {
