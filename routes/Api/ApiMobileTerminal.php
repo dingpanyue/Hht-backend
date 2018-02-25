@@ -157,7 +157,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::get('/recommend-users', ['as' => '', 'uses' => 'UserController@getRecommendUsers']);
         //用户隐私设置
         Route::post('/user-configs', ['as' => '', 'uses' => 'UserController@setUserConfigs']);
-        //
+        //设置用户昵称
+        Route::post('/name', ['as' => '', 'uses' => 'UserController@setUserName']);
     });
 
     //支付接口

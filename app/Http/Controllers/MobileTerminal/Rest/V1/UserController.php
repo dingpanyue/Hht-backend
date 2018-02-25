@@ -633,4 +633,15 @@ class UserController extends BaseController
         return self::success($userConfig);
     }
 
+    public function setUserName(Request $request)
+    {
+        $user = $this->user;
+
+        $inputs = $request->only('name');
+
+        $user->name = $inputs['name'];
+
+        $user->save();
+    }
+
 }
