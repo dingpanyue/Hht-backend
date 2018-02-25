@@ -642,6 +642,8 @@ class UserController extends BaseController
         $user->name = $inputs['name'];
 
         $user->save();
+
+        return self::success($user);
     }
 
 }
