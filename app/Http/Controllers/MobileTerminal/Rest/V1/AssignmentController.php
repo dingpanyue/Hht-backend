@@ -512,4 +512,6 @@ class AssignmentController extends BaseController
 
         return self::success($imageArray);
     }
+
+
 }

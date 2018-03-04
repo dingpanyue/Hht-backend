@@ -55,6 +55,8 @@ class AcceptedAssignmentService
 
         if ($status != 'all') {
             $acceptedAssignments = $acceptedAssignments->where('status', $status);
+        } else {
+            $acceptedAssignments = $acceptedAssignments->where('status', '!=', AcceptedAssignment::STATUS_FINISHED);
         }
 
         $acceptedAssignments = $acceptedAssignments->get();
