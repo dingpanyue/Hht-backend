@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class AcceptedService extends Model
 {
+
     const STATUS_SUBMITTED = 1;
     const STATUS_UNPAID = 2;
     const STATUS_ADAPTED = 3;
