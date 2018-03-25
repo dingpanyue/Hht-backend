@@ -70,7 +70,7 @@ class UserController extends BaseController
         $userInfo->user_id = $user->id;
         $userInfo->real_name = $inputs['real_name'];
         $userInfo->card_no = $inputs['card_no'];
-        $userInfo->status = UserInfo::STATUS_UNAUTHENTICATED;
+        $userInfo->status = UserInfo::STATUS_AUTHENTICATED;
         $userInfo->save();
 
         //todo 调用认证接口对用户进行认证 改变状态
