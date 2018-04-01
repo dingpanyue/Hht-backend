@@ -665,7 +665,7 @@ class UserController extends BaseController
         //推广之后需要改成set存储  按city_id存放
         Redis::setex($user->id, 3600, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
 
-        dd((Redis::get("*")));
+        dd((Redis::mget()));
     }
 
 }
