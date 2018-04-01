@@ -19,6 +19,7 @@ use App\Traits\VerifyCardNo;
 use GatewayWorker\Lib\Gateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
@@ -644,6 +645,26 @@ class UserController extends BaseController
         $user->save();
 
         return self::success($user);
+    }
+
+    //
+    public function recordLocation(Request $request)
+    {
+        $user = $this->user;
+        $inputs =  $request->only('lng', 'lat');
+
+        $validator = $validator = app('validator')->make($inputs, [
+            "lng" => "required|numeric|min:-180|max:180",
+            "lat" => "required|numeric|min:-90|max:90",
+        ]);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        Redis::set($user->id , [$user->id => [$inputs['lng'], $inputs['lat']]]);
+
+        dd(Redis::get($user->id));
     }
 
 }

@@ -159,6 +159,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/user-configs', ['as' => '', 'uses' => 'UserController@setUserConfigs']);
         //设置用户昵称
         Route::post('/name', ['as' => '', 'uses' => 'UserController@setUserName']);
+        //存储用户位置
+        Route::post('/location', ['as' => '', 'uses' => 'UserController@recordLocation']);
     });
 
     //支付接口
