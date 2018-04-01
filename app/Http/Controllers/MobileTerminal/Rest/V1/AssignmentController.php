@@ -7,6 +7,7 @@ use App\Models\Assignment;
 use App\Models\AssignmentClassification;
 use App\Models\AssignmentTag;
 use App\Models\GlobalConfig;
+use App\Models\TimedTask;
 use App\Models\User;
 use App\Models\UserInfo;
 use App\Models\UserTalent;
@@ -149,6 +150,12 @@ class AssignmentController extends BaseController
 
         $assignment->recommand_users = $recommendUsers;
 
+        $timedTask = new TimedTask();
+        $timedTask->name = "发布的服务 $assignment->id 推送";
+        $timedTask->command = "push $assignment->id";
+        $timedTask->start_time = date('Y-m-d H:i', (strtotime('now') + 60)) . ':00';
+        $timedTask->result = 0;
+        $timedTask->save();
         return self::success(AssignmentTransformer::transform($assignment));
     }
 

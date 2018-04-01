@@ -647,7 +647,7 @@ class UserController extends BaseController
         return self::success($user);
     }
 
-    //
+    //用户向服务端提供位置
     public function recordLocation(Request $request)
     {
         $user = $this->user;
@@ -663,9 +663,9 @@ class UserController extends BaseController
         }
 
         //推广之后需要改成set存储  按city_id存放
-        Redis::setex($user->id, 3600, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
+        Redis::setex($user->id, 3600, serialize(['user_id' => $user->id, 'location' => [$inputs['lng'], $inputs['lat']]]));
 
-        dd(Redis::keys("*"));
+        return self::success();
     }
 
 }

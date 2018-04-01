@@ -17,7 +17,8 @@ class Kernel extends ConsoleKernel
         'App\Console\Commands\Timer',
         'App\Console\Commands\OutDate',      //过期
         'App\Console\Commands\Expire',      //失效
-        'App\Console\Commands\CheckBankPay'
+        'App\Console\Commands\CheckBankPay',
+        'App\Console\Commands\DoPush'     //推送
     ];
 
     /**
