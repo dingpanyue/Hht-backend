@@ -52,7 +52,8 @@ class DoPush extends Command
             $data = unserialize(Redis::get($key));
             $distance = Helper::getDistance($lng, $lat, $data['location'][0], $data['location'][1]);
             if ($distance <= 5) {
-                GatewayWorkerService::sendSystemMessage("距您$distance km处有人发布了委托 $assignment->title,委托价格 $assignment->price 元", $data['user_id']);
+                $distance = sprintf("%.2f",$distance*100);
+                GatewayWorkerService::sendSystemMessage("距您 $distance 米处有人发布了委托      $assignment->title,委托价格 $assignment->price 元", $data['user_id']);
             }
         }
 
