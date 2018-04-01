@@ -662,7 +662,7 @@ class UserController extends BaseController
             return self::parametersIllegal($validator->messages()->first());
         }
 
-        Redis::set($user->id, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
+        Redis::setex($user->id, 3600, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
 
         dd(unserialize(Redis::get($user->id)));
     }
