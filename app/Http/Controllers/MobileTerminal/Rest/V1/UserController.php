@@ -651,7 +651,7 @@ class UserController extends BaseController
     public function recordLocation(Request $request)
     {
         $user = $this->user;
-        $inputs =  $request->only('lng', 'lat');
+        $inputs =  $request->only( 'lng', 'lat');
 
         $validator = $validator = app('validator')->make($inputs, [
             "lng" => "required|numeric|min:-180|max:180",
@@ -662,9 +662,10 @@ class UserController extends BaseController
             return self::parametersIllegal($validator->messages()->first());
         }
 
+        //推广之后需要改成set存储  按city_id存放
         Redis::setex($user->id, 3600, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
 
-        dd(unserialize(Redis::get($user->id)));
+        dd((Redis::get("*")));
     }
 
 }
