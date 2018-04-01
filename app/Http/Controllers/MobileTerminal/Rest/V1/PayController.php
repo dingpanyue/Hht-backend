@@ -249,7 +249,19 @@ class PayController extends BaseController
                     } else {
                         throw new \Exception();
                     }
+
+                    if ($order->type == Order::TYPE_ASSIGNMENT) {
+                        //余额支付， 支付完成后同步推送
+                        $timedTask = new TimedTask();
+                        $timedTask->name = "发布的服务 $assignment->id 推送";
+                        $timedTask->command = "push $assignment->id";
+                        $timedTask->start_time = date('Y-m-d H:i', (strtotime('now') + 60)) . ':00';
+                        $timedTask->result = 0;
+                        $timedTask->save();
+                    }
                 });
+
+
                 return self::success($order);
             } else {
                 return self::error(self::CODE_BALANCE_NOTE_ENOUGH, "账户余额不足，请选择其他支付方式");
@@ -336,6 +348,13 @@ class PayController extends BaseController
                             $order->id,
                             $totalAmount
                         );
+
+                        $timedTask = new TimedTask();
+                        $timedTask->name = "发布的服务 $assignment->id 推送";
+                        $timedTask->command = "push $assignment->id";
+                        $timedTask->start_time = date('Y-m-d H:i', (strtotime('now') + 60)) . ':00';
+                        $timedTask->result = 0;
+                        $timedTask->save();
                     } else {
                         /**
                          * @var $acceptedService AcceptedService
