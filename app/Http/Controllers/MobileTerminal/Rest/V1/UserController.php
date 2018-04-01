@@ -664,7 +664,7 @@ class UserController extends BaseController
 
         Redis::set($user->id, serialize([$user->id => [$inputs['lng'], $inputs['lat']]]));
 
-        dd(Redis::get($user->id));
+        dd(unserialize(Redis::get($user->id)));
     }
 
 }
