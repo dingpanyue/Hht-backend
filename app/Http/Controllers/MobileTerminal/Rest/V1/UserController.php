@@ -4,6 +4,7 @@ namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Models\Assignment;
 use App\Models\AssignmentTag;
+use App\Models\Comment;
 use App\Models\Message;
 use App\Models\User;
 use App\Models\UserAccount;
@@ -668,4 +669,13 @@ class UserController extends BaseController
         return self::success();
     }
 
+    //获取用户所获得的所有评论
+    public function getUserComments($user_id)
+    {
+        $user = $this->user;
+
+        $comments = Comment::where('to_user_id', $user_id)->with('fromUser')->with('assignment')->paginate('10');
+
+        return self::success($comments);
+    }
 }
