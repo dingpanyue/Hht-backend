@@ -161,6 +161,7 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         Route::post('/name', ['as' => '', 'uses' => 'UserController@setUserName']);
         //存储用户位置
         Route::post('/location', ['as' => '', 'uses' => 'UserController@recordLocation']);
+        //
     });
 
     //支付接口

@@ -6,6 +6,7 @@ use App\Models\AcceptedAssignment;
 use App\Models\Assignment;
 use App\Models\AssignmentClassification;
 use App\Models\AssignmentTag;
+use App\Models\Comment;
 use App\Models\GlobalConfig;
 use App\Models\TimedTask;
 use App\Models\User;
@@ -384,10 +385,11 @@ class AssignmentController extends BaseController
     }
 
     //确认委托成功 assign_user
-    public function finishAcceptedAssignment($id)
+    public function finishAcceptedAssignment($id , Request $request)
     {
         $user = $this->user;
 
+        $comment = $request->get('comment');
         /**
          * @var $acceptedAssignment AcceptedAssignment
          */
@@ -405,6 +407,16 @@ class AssignmentController extends BaseController
             return self::notAllowed('您不是该委托的发布人');
         } else {
             $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment, $user->id);
+
+            if ($comment) {
+                $comment = new Comment();
+                $comment->text = $comment;
+                $comment->from_user_id = $user->id;
+                $comment->to_user_id = $acceptedAssignment->serve_user_id;
+                $comment->assignment_id = $acceptedAssignment->parent_id;
+                $comment->save();
+            }
+
             return self::success(AcceptedAssignmentTransformer::transform($acceptedAssignment, false));
         }
     }

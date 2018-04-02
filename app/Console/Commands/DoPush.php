@@ -53,7 +53,7 @@ class DoPush extends Command
             $distance = Helper::getDistance($lng, $lat, $data['location'][0], $data['location'][1]);
             if ($distance <= 5) {
                 $distance = sprintf("%.2f",$distance*100);
-                GatewayWorkerService::sendSystemMessage("距您 $distance 米处有人发布了委托      $assignment->title,委托价格 $assignment->reward 元", $data['user_id']);
+                GatewayWorkerService::sendSystemMessage("距您 $distance 米处有人发布了需求《$assignment->title 》,需求价格 $assignment->reward 元", $data['user_id']);
             }
         }
 
