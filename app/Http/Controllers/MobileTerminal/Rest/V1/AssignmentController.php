@@ -389,7 +389,8 @@ class AssignmentController extends BaseController
     {
         $user = $this->user;
 
-        $comment = $request->get('comment');
+        $comment_text = $request->get('comment');
+
         /**
          * @var $acceptedAssignment AcceptedAssignment
          */
@@ -408,9 +409,9 @@ class AssignmentController extends BaseController
         } else {
             $acceptedAssignment = $this->assignmentService->finishAcceptedAssignment($acceptedAssignment, $user->id);
 
-            if ($comment) {
+            if ($comment_text) {
                 $comment = new Comment();
-                $comment->text = $comment;
+                $comment->text = $comment_text;
                 $comment->from_user_id = $user->id;
                 $comment->to_user_id = $acceptedAssignment->serve_user_id;
                 $comment->assignment_id = $acceptedAssignment->parent_id;
