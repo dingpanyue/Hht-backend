@@ -431,7 +431,7 @@ class AssignmentService
             $assignments->where('status', $status);
         }
 
-        $assignments = $assignments->get();
+        $assignments = $assignments->paginate('20');
 
         return $assignments;
     }

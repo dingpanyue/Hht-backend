@@ -59,7 +59,7 @@ class AcceptedAssignmentService
             $acceptedAssignments = $acceptedAssignments->where('status', '!=', AcceptedAssignment::STATUS_FINISHED);
         }
 
-        $acceptedAssignments = $acceptedAssignments->get();
+        $acceptedAssignments = $acceptedAssignments->paginate('20');
         return $acceptedAssignments;
     }
 
