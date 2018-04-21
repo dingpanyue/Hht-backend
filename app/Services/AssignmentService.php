@@ -356,7 +356,7 @@ class AssignmentService
                 'orders',
                 Order::BALANCE,
                 $order->id,
-                -$order->fee
+                -$acceptedAssignment->reward * (1 - $rate)
             );
 
             $assignUser = $acceptedAssignment->assignUser;
