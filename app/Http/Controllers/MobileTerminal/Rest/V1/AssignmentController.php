@@ -74,7 +74,7 @@ class AssignmentController extends BaseController
         $user = $this->user;
 
         if (!$user->userInfo) {
-            return self::notAllowed('您还没完成实名认证，无法发布委托');
+            return self::notAllowed('您还没完成实名认证，无法发布需求');
         }
 
         //用户输入
@@ -100,9 +100,9 @@ class AssignmentController extends BaseController
             "expired_at" => "required|date|after:now",
             'deadline' => "required|date|after:now",
         ], [
-            "title.required" => "委托标题必须填写",
-            "title.max" => "委托标题必须在{$globalConfigs['assignment_title_limit']}以内",
-            "classification.required" => "委托分类必须填写",
+            "title.required" => "需求标题必须填写",
+            "title.max" => "需求标题必须在{$globalConfigs['assignment_title_limit']}以内",
+            "classification.required" => "需求分类必须填写",
             "province_id.required" => "省份必须选择",
             "province_id.integer" => "请选择正确的省份",
             "city_id.required" => "城市必须选择",
@@ -118,10 +118,10 @@ class AssignmentController extends BaseController
             "lat.min" => "纬度必须在-90到90之间",
             "lat.max" => "纬度必须在-90到90之间",
             "detail_address.required" => "详细地址必须填写",
-            "reward.min" => "委托报酬必须大于0",
-            "reward.numeric" => "委托报酬必须为数字",
-            "expired_at.date" => "委托过期时间格式不正确",
-            "expired_at.after" => "委托过期时间不合理"
+            "reward.min" => "需求报酬必须大于0",
+            "reward.numeric" => "需求报酬必须为数字",
+            "expired_at.date" => "需求过期时间格式不正确",
+            "expired_at.after" => "需求过期时间不合理"
         ]);
 
 
@@ -169,11 +169,11 @@ class AssignmentController extends BaseController
         }
 
         if ($assignment->user_id != $user->id) {
-            return self::notAllowed('你不能取消不是自己发布的委托');
+            return self::notAllowed('你不能取消不是自己发布的需求');
         }
 
         if ($assignment->status != Assignment::STATUS_UNPAID) {
-            return self::notAllowed('当前委托不允许取消操作');
+            return self::notAllowed('当前需求不允许取消操作');
         }
 
         try {
@@ -208,7 +208,7 @@ class AssignmentController extends BaseController
     {
         $user = $this->user;
         if (!$user->userInfo) {
-            return self::notAllowed('您还没完成实名认证，无法接受委托');
+            return self::notAllowed('您还没完成实名认证，无法接受需求');
         }
 
         /**
@@ -222,7 +222,7 @@ class AssignmentController extends BaseController
 
         //自己不能接受自己发布的委托
         if ($assignment->user_id == $user->id) {
-            return self::notAllowed('你不能接受自己发布的委托');
+            return self::notAllowed('你不能接受自己发布的需求');
         }
 
         //不能反复接同一个委托
@@ -231,7 +231,7 @@ class AssignmentController extends BaseController
             ->get();
 
         if (count($acceptedAssignments)) {
-            return self::notAllowed('你不能重复接受该委托');
+            return self::notAllowed('你不能重复接受该需求');
         }
 
         $inputs = $request->only('reward', 'deadline');

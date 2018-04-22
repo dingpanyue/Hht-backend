@@ -602,7 +602,7 @@ class UserController extends BaseController
         $classification = $classificationTag->classification;
 
         if (!$assignment) {
-            return self::notAllowed("该用户并没有发布委托");
+            return self::notAllowed("该用户并没有发布需求");
         }
 
         $user = new User();

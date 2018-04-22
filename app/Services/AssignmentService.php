@@ -95,7 +95,7 @@ class AssignmentService
             $userId,
             OperationLog::STATUS_UNPAID,
             OperationLog::STATUS_FAILED,
-            "用户取消未支付的委托"
+            "用户取消未支付的需求"
         );
     }
 
@@ -221,7 +221,7 @@ class AssignmentService
         );
 
         //推送
-        $message = "您发布的委托 $assignment->title 有人申请接受";
+        $message = "您发布的需求 $assignment->title 有人申请接受";
         GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
         return $acceptedAssignment;
@@ -234,7 +234,7 @@ class AssignmentService
 
         $acceptedAssignment->delete();
 
-        $message = "有一条接受您发布的委托 $assignment->title 的申请已被取消";
+        $message = "有一条接受您发布的需求 $assignment->title 的申请已被取消";
         GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
     }
 
@@ -246,7 +246,7 @@ class AssignmentService
         $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->where('id', '!=', $acceptedAssignment->id)->get();
 
         foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
-            $message = "由于委托 $assignment->title 已经接受其他人的申请， 您接受该委托的申请已失效，系统帮您自动删除";
+            $message = "由于需求 $assignment->title 已经接受其他人的申请， 您接受该需求的申请已失效，系统帮您自动删除";
             GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
         }
 
@@ -265,7 +265,7 @@ class AssignmentService
 
             //添加定时任务， 检测 deadline
             $timedTask = new TimedTask();
-            $timedTask->name = "接受的委托$acceptedAssignment->id 达到deadline";
+            $timedTask->name = "接受的需求$acceptedAssignment->id 达到deadline";
             $timedTask->command = "outDate assign $acceptedAssignment->id";
             $timedTask->start_time = date('Y-m-d H:i', strtotime($acceptedAssignment->deadline)) . ':00';
             $timedTask->result = 0;
@@ -285,7 +285,7 @@ class AssignmentService
         );
 
         //推送
-        $message = "您接受委托 $assignment->title 的申请已被采纳，请在 $acceptedAssignment->deadline 之前完成委托并提交给委托人";
+        $message = "您接受需求 $assignment->title 的申请已被采纳，请在 $acceptedAssignment->deadline 之前完成需求并提交给委托人";
         GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;
@@ -310,7 +310,7 @@ class AssignmentService
         );
 
         //推送
-        $message = "您发布的委托 $assignment->title 的已被提交完成，请核实后确认，如在截止时间内未对此委托进行操作，系统将默认完成该委托";
+        $message = "您发布的需求 $assignment->title 的已被提交完成，请核实后确认，如在截止时间内未对此需求进行操作，系统将默认完成该委托";
         GatewayWorkerService::sendSystemMessage($message, $assignment->user_id);
 
         return $acceptedAssignment;
@@ -382,7 +382,7 @@ class AssignmentService
         );
 
         //推送
-        $message = "您接受的委托 $assignment->title 的已被确认完成，委托报酬已经打入您的余额";
+        $message = "您接受的需求 $assignment->title 的已被确认完成，需求报酬已经打入您的余额";
         GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;
@@ -409,7 +409,7 @@ class AssignmentService
 
 
         //推送给提交完成的人
-        $message = "您提交的完成委托 $assignment->title 的请求已被拒绝，请耐心等待客服介入";
+        $message = "您提交的完成需求 $assignment->title 的请求已被拒绝，请耐心等待客服介入";
         GatewayWorkerService::sendSystemMessage($message, $acceptedAssignment->serve_user_id);
 
         return $acceptedAssignment;

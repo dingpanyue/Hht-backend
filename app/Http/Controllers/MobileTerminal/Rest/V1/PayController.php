@@ -113,7 +113,7 @@ class PayController extends BaseController
             }
 
             if ($assignment->user_id != $this->user->id) {
-                return self::notAllowed("你不是这条委托的发布人，无法支付");
+                return self::notAllowed("你不是这条需求的发布人，无法支付");
             }
 
             //创建订单
@@ -464,7 +464,7 @@ class PayController extends BaseController
                 $acceptedAssignments = AcceptedAssignment::where('parent_id', $assignment->id)->get();
 
                 foreach ($acceptedAssignments as $invalidAcceptedAssignment) {
-                    $message = "由于委托 $assignment->title 已经申请退款， 您接受该委托的申请已失效，系统帮您自动删除";
+                    $message = "由于委托 $assignment->title 已经申请退款， 您接受该需求的申请已失效，系统帮您自动删除";
                     AcceptedAssignment::where('parent_id', $assignment->id)->delete();
                     GatewayWorkerService::sendSystemMessage($message, $invalidAcceptedAssignment->serve_user_id);
                 }
@@ -512,7 +512,7 @@ class PayController extends BaseController
                         );
                     });
 
-                    return self::success("退款成功，余额已返回您的账户，委托取消");
+                    return self::success("退款成功，余额已返回您的账户，需求取消");
                 } else {
                     $charge_id = $order->charge_id;
 
