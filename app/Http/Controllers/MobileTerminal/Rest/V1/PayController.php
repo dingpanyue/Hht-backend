@@ -346,7 +346,7 @@ class PayController extends BaseController
                             'orders',
                             $method,
                             $order->id,
-                            $totalAmount
+                            $totalAmount*0.01
                         );
 
                         $timedTask = new TimedTask();
@@ -386,7 +386,7 @@ class PayController extends BaseController
                             'orders',
                             $method,
                             $order->id,
-                            $totalAmount
+                            $totalAmount*0.01
                         );
                     }
                 });
