@@ -560,13 +560,13 @@ class PayController extends BaseController
 
         $validator = app('validator')->make($inputs, [
             'method' => 'required|in:alipay,ws,bank',
-            'amount' => 'required|numeric|min:0'
+            'amount' => 'required|numeric|min:100'
         ], [
             'method.required' => '提现方式必须填写',
             'method.in' => '提现方式只能为微信或者支付宝或者银行卡',
             'amount.required' => '提现数额必须填写',
             'amount.numeric' => '提现数量必须为数字',
-            'amount.min' => '提现金额必须大于0'
+            'amount.min' => '提现金额必须大于100元'
         ]);
 
         if ($validator->fails()) {
