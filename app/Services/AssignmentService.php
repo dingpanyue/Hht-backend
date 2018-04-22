@@ -85,8 +85,7 @@ class AssignmentService
     //取消委托
     public function cancelAssignment(Assignment $assignment, $userId)
     {
-        $assignment->status = Assignment::STATUS_FAILED;
-        $assignment->save();
+        $assignment->delete();
 
         $this->operationLogService->log(
             OperationLog::OPERATION_CANCEL,
