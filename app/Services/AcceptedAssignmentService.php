@@ -51,7 +51,7 @@ class AcceptedAssignmentService
     //获取我作为服务者接受的委托
     public function getAcceptedAssignmentsByUser(User $user, $status = 'all')
     {
-        $acceptedAssignments = $this->acceptedAssignmentEloqument->with('assignUser')->with('assignment')->where('serve_user_id', $user->id)->orderBy('updated_at', 'desc');
+        $acceptedAssignments = $this->acceptedAssignmentEloqument->with('assignUser')->with('assignment')->where('serve_user_id', $user->id)->orderBy('status', 'desc')->orderBy('updated_at', 'desc');
 
         if ($status != 'all') {
             $acceptedAssignments = $acceptedAssignments->where('status', $status);
