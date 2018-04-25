@@ -676,6 +676,7 @@ class PayController extends BaseController
                     //创建withdrawl
                     $withdrawal = new Withdrawal();
                     $withdrawal->method = $method;
+                    $withdrawal->account = $userAccount->bank_account;
                     $withdrawal->fee = $amount;
                     $withdrawal->out_trade_no = $out_trade_no;
                     $withdrawal->user_id = $userInfo->user_id;
