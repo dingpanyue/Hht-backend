@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Withdrawal;
+use EasyWeChat\Factory;
 use Illuminate\Console\Command;
 
 class CheckBankPay extends Command
