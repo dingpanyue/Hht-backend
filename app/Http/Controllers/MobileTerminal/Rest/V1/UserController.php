@@ -125,6 +125,8 @@ class UserController extends BaseController
             $user->balance = $balance;
             $userAccount = $user->userAccount;
             $user->userAccount = $userAccount;
+            $user->real_name = $userInfo->real_name;
+            $user->card_no = $userInfo->card_no;
         }
 
         return self::success($user);
