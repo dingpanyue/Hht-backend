@@ -32,6 +32,7 @@ class SmsCodeService
 
         $result = $client->execute($sendSms);
 
+        dd($result);
         if ($result->Code != 'OK') {
             return false;
         } else {
