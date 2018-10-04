@@ -43,9 +43,9 @@ class RegisterController extends BaseController
         $mobile = $inputs['mobile'];
         $smsCode = $inputs['sms_code'];
 
-        if ($smsCode != cache('sms'.$mobile)) {
-            return self::parametersIllegal('您输入的验证码不正确');
-        }
+//        if ($smsCode != cache('sms'.$mobile)) {
+//            return self::parametersIllegal('您输入的验证码不正确');
+//        }
 
         event(new Registered($user = $this->create($request->all())));
 
