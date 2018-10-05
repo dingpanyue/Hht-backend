@@ -2,6 +2,7 @@
 namespace App\Http\Controllers\MobileTerminal\Rest\V1;
 
 use App\Http\Controllers\ApiController;
+use App\Models\UserInfo;
 use App\Services\SmsCodeService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Foundation\Auth\RegistersUsers;
@@ -50,7 +51,12 @@ class RegisterController extends BaseController
 
         event(new Registered($user = $this->create($request->all())));
 
-        dd($user);
+        if ($user) {
+            $userInfoModel = new UserInfo();
+            $userInfoModel->create([
+                'user_id' => $user->id
+            ]);
+        }
 
         return json_encode($user);
     }
