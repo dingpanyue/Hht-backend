@@ -52,10 +52,9 @@ class RegisterController extends BaseController
         event(new Registered($user = $this->create($request->all())));
 
         if ($user) {
-            $userInfoModel = new UserInfo();
-            $userInfoModel->create([
-                'user_id' => $user->id
-            ]);
+            $userInfo = new UserInfo();
+            $userInfo->user_id = $user->id;
+            $userInfo->save();
         }
 
         return json_encode($user);
