@@ -50,6 +50,8 @@ class RegisterController extends BaseController
 
         event(new Registered($user = $this->create($request->all())));
 
+        dd($user);
+
         return json_encode($user);
     }
 
