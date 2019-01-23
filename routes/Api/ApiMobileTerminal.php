@@ -20,6 +20,8 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
     Route::post('/send-sms', 'RegisterController@sendSmsCode');
     //登录
     Route::post('/login', 'LoginController@login');
+    //修改密码的接口
+    Route::post('/reset-password', 'RegisterController@resetPassword');
     //Pingpp回调地址
     Route::post('/notify', 'PayController@notify');
     //获取所有仲裁中的服务实例列表
@@ -176,10 +178,4 @@ Route::group(['prefix' => '/mobile-terminal/rest/v1',
         //查询微信到的银行卡提现
         Route::get('/bank-pay/{trade_no}', ['as' => '', 'uses' => 'PayController@queryWxBankPay']);
     });
-
-
-
-
-
-
 });

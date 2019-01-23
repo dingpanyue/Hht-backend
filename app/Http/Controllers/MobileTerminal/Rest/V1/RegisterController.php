@@ -15,9 +15,14 @@ class RegisterController extends BaseController
 {
     protected $smsCodeService;
 
-    public function __construct(SmsCodeService $smsCodeService)
+    protected $userEloquent;
+
+    public function __construct(SmsCodeService $smsCodeService, \App\Models\User $user)
     {
         $this->smsCodeService = $smsCodeService;
+
+        $this->userEloquent = $user;
+
         parent::__construct();
     }
 
@@ -45,9 +50,9 @@ class RegisterController extends BaseController
         $smsCode = $inputs['sms_code'];
 
 
-//        if ($smsCode != cache('sms'.$mobile)) {
-//            return self::parametersIllegal('您输入的验证码不正确');
-//        }
+        if ($smsCode != cache('sms'.$mobile)) {
+            return self::parametersIllegal('您输入的验证码不正确');
+        }
 
         event(new Registered($user = $this->create($request->all())));
 
@@ -104,6 +109,40 @@ class RegisterController extends BaseController
         return self::success();
     }
 
+    public function resetPassword(Request $request)
+    {
+        $validator =  $validator = app('validator')->make($request->all(), [
+            "mobile"    => 'required|exists:users,mobile|regex:/^1[34578][0-9]{9}$/',
+            'sms_code'  =>  'required'
+        ], [
+            "mobile.require" => '必须提供电话号码',
+            "mobile.regex" => '无效的电话号码',
+            "mobile.exists" => '该手机号码尚未注册',
+            'password.required' => '密码必须填写',
+            'password.between' => '密码格式不正确'
+        ]);
+
+        if ($validator->fails()) {
+            return self::parametersIllegal($validator->messages()->first());
+        }
+
+        $inputs = $request->all();
+        $mobile = $inputs['mobile'];
+        $smsCode = $inputs['sms_code'];
+
+        if ($smsCode !== cache('sms'.$mobile)) {
+            return self::parametersIllegal('您输入的验证码不正确');
+        }
+
+        $user = $this->userEloquent->where('mobile', $mobile)->first();
+        $user->password = bcrypt($inputs['password']);
+
+        if ($user->save()) {
+            return self::success();
+        } else {
+            return self::error(self::CODE_PARAM_ILLEGAL , '修改失败，请联系管理员');
+        }
+    }
 
 
 
