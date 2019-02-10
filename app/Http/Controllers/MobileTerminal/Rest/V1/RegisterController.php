@@ -69,10 +69,9 @@ class RegisterController extends BaseController
     public function sendSmsCode(Request $request)
     {
         $validator =  $validator = app('validator')->make($request->all(), [
-            "mobile"    => 'required|unique:users,mobile|regex:/^1[34578][0-9]{9}$/',
+            "mobile"    => 'required|regex:/^1[34578][0-9]{9}$/',
         ], [
             "mobile.require" => '必须提供电话号码',
-            "mobile.unique" => '该电话号码已被注册过',
             "mobile.regex" => '无效的电话号码'
         ]);
 
