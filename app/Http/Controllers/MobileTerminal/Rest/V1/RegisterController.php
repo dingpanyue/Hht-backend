@@ -132,7 +132,7 @@ class RegisterController extends BaseController
 
         if ((trim($smsCode)!= trim(cache('sms'.$mobile)))) {
             $sms = cache('sms'.$mobile);
-            return self::parametersIllegal("您输入的验证码 $smsCode 不正确,验证码为 $sms");
+            return self::parametersIllegal("您输入的验证码不正确");
         }
 
         $user = $this->userEloquent->where('mobile', $mobile)->first();
