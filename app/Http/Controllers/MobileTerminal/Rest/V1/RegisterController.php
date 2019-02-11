@@ -128,9 +128,9 @@ class RegisterController extends BaseController
 
         $inputs = $request->all();
         $mobile = $inputs['mobile'];
-        $smsCode = $inputs['sms_code'];
+        $smsCode = trim($inputs['sms_code']);
 
-        if ($smsCode !== cache('sms'.$mobile)) {
+        if ((trim($smsCode)!= trim(cache('sms'.$mobile)))) {
             $sms = cache('sms'.$mobile);
             return self::parametersIllegal("您输入的验证码 $smsCode 不正确,验证码为 $sms");
         }
