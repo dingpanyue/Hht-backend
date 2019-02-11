@@ -139,7 +139,7 @@ class RegisterController extends BaseController
         $user->password = bcrypt($inputs['password']);
 
         if ($user->save()) {
-            return self::success();
+            return self::success('密码修改成功');
         } else {
             return self::error(self::CODE_PARAM_ILLEGAL , '修改失败，请联系管理员');
         }
